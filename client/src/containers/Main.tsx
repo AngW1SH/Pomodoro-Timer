@@ -5,9 +5,10 @@ import List from "../components/List";
 interface MainProps {}
 
 const Main: FC<MainProps> = () => {
+  const onTimeout = () => {};
   return (
     <div className="flex h-screen">
-      <Timer />
+      <Timer initialTime={2} callback={onTimeout} />
       <List />
     </div>
   );
