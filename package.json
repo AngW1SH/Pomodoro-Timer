@@ -4,5 +4,9 @@
   },
   "scripts": {
     "start": "concurrently \"cd ./server && npm run dev\" \"cd ./client && npm run dev\""
+  },
+  "devDependencies": {
+    "prettier": "^2.8.7",
+    "prettier-plugin-tailwindcss": "^0.2.7"
   }
 }
