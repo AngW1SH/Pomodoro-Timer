@@ -36,8 +36,7 @@ const Timer: FC<TimerProps> = ({ initialTime, callback }) => {
     if (!stopped) {
       if (timer.current) clearInterval(timer.current);
     } else {
-      updateTime(time); // I found immediate timer resume to be more intuitive
-      launchTimer(time - 1);
+      launchTimer(time - 1); // I found immediate timer resume to be more intuitive
     }
     setStopped(!stopped);
   };
@@ -46,7 +45,14 @@ const Timer: FC<TimerProps> = ({ initialTime, callback }) => {
     callback();
   };
 
+  const handleReset = () => {
+    if (timer.current) clearInterval(timer.current);
+    setTime(initialTime);
+    setStopped(true);
+  };
+
   const launchTimer = (initialTime: number) => {
+    setTime(initialTime);
     let timeClosure = initialTime; // look up react state closure
     timer.current = setInterval(() => {
       timeClosure -= 1;
@@ -71,7 +77,7 @@ const Timer: FC<TimerProps> = ({ initialTime, callback }) => {
         onClick={handleStop}
         className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize"
       >
-        Stop Timer
+        {stopped ? "Resume Timer" : "Stop Timer"}
       </div>
       <div
         onClick={handleSkip}
@@ -79,7 +85,10 @@ const Timer: FC<TimerProps> = ({ initialTime, callback }) => {
       >
         Skip Pomodoro
       </div>
-      <div className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize">
+      <div
+        onClick={handleReset}
+        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize"
+      >
         Reset Pomodoro
       </div>
     </div>
