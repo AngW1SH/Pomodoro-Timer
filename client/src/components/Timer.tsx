@@ -42,6 +42,10 @@ const Timer: FC<TimerProps> = ({ initialTime, callback }) => {
     setStopped(!stopped);
   };
 
+  const handleSkip = () => {
+    callback();
+  };
+
   const launchTimer = (initialTime: number) => {
     let timeClosure = initialTime; // look up react state closure
     timer.current = setInterval(() => {
@@ -69,7 +73,10 @@ const Timer: FC<TimerProps> = ({ initialTime, callback }) => {
       >
         Stop Timer
       </div>
-      <div className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize">
+      <div
+        onClick={handleSkip}
+        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize"
+      >
         Skip Pomodoro
       </div>
       <div className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize">
