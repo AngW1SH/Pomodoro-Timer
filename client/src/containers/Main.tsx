@@ -8,7 +8,7 @@ const Main: FC<MainProps> = () => {
   const onTimeout = () => {};
   return (
     <div className="flex h-screen">
-      <Timer initialTime={2} callback={onTimeout} />
+      <Timer initialTime={20} callback={onTimeout} />
       <List />
     </div>
   );
