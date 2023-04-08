@@ -80,7 +80,6 @@ const Main: FC<MainProps> = () => {
   const onComplete = (id: number) => {
     deletePomodoro(id);
     setPomodoros(pomodoros.filter((pomodoro) => pomodoro.id != id));
-    updateOrder(pomodoros);
   };
 
   const onAdd = () => {
@@ -93,7 +92,6 @@ const Main: FC<MainProps> = () => {
     setPomodoros([...pomodoros, newPomodoro]);
     setEdited(newPomodoro);
     addPomodoro(newPomodoro);
-    updateOrder(pomodoros);
   };
 
   const onSave = (pomodoro: IPomodoro) => {
@@ -101,12 +99,11 @@ const Main: FC<MainProps> = () => {
     const order = pomodoros.findIndex(
       (pomMapped) => pomMapped.id == pomodoro.id
     );
-    if (order) {
+    if (order != -1) {
       savePomodoro(pomodoro, order).then((result) =>
         setFetchesLeft((fetchesLeftPrev) => fetchesLeftPrev - 1)
       );
     }
-    updateOrder(pomodoros);
   };
 
   const onTimeout = () => {
