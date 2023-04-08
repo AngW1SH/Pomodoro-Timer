@@ -80,13 +80,13 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete, onSave }) => {
     }
   };
 
-  const debouncededited = useDebounce(edited, 300);
+  const debouncedEdited = useDebounce(edited, 300);
 
   useEffect(() => {
-    if (debouncededited) {
-      onSave(debouncededited);
+    if (debouncedEdited) {
+      onSave(debouncedEdited);
     }
-  }, [debouncededited]);
+  }, [debouncedEdited]);
 
   useEffect(() => {
     /*
