@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
 import { EditAction, EditActionKind, IPomodoro } from "../../types";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 
@@ -11,6 +11,7 @@ interface EditProps {
 const Edit: FC<EditProps> = ({ edited, onChange, onComplete }) => {
   const [opened, setOpened] = useState(false);
   const [editedInner, setEditedInner] = useState(edited);
+  const ref = useRef<HTMLDivElement>(null);
 
   const handleClose = () => {
     setOpened(false);
@@ -47,12 +48,29 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete }) => {
     setOpened(false);
   };
 
+  const handleDescriptionKeydown = (e: React.KeyboardEvent) => {
+    if (e.key == "Enter" && e.shiftKey == false && ref.current) {
+      e.preventDefault();
+      const selection = window.getSelection();
+      if (selection) {
+        const range = selection.getRangeAt(0);
+        const br = document.createElement("br");
+        range.insertNode(br);
+        range.setStartAfter(br);
+        range.setEndAfter(br);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+  };
+
   useEffect(() => {
     /*
     Potential Problems:
      - make sure a new object is always passed
        the editor won't open back if the same pomodoro is passed
     */
+
     if (edited) setOpened(true);
     setEditedInner(edited);
   }, [edited]);
@@ -70,7 +88,9 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete }) => {
         className="relative mb-4 text-4xl outline-none before:hidden before:text-gray-600 empty:before:block empty:before:content-[attr(placeholder)]"
       />
       <ContentEditable
+        innerRef={ref}
         onChange={onDescriptionChange}
+        onKeyDown={handleDescriptionKeydown}
         html={edited ? edited.description : ""}
         placeholder="Description"
         className="relative outline-none before:hidden before:text-gray-600 empty:before:block empty:before:content-[attr(placeholder)]"

@@ -33,7 +33,7 @@ const List: FC<ListProps> = ({ pomodoros, onClick, onAdd }) => {
               {pomodoro.title}
             </div>
             <div className="mr-20 overflow-hidden whitespace-nowrap">
-              {pomodoro.description}
+              {pomodoro.description.replace(/(<([^>]+)>)/gi, " ")}
             </div>
             <div
               className={`${
