@@ -6,13 +6,42 @@ const prisma = new PrismaClient();
 
 //const prisma = new PrismaClient();
 
+apiRouter.post("/updateorder", async (req, res) => {
+  if (!req.body.info) {
+    res.status(400).send("Info not recieved");
+  }
+
+  const result = await Promise.all(
+    req.body.info.map(({ id, order }) =>
+      prisma.pomodoro.update({
+        where: {
+          id: id,
+        },
+        data: {
+          order: order,
+        },
+      })
+    )
+  );
+
+  return result;
+});
+
 apiRouter.post("/add", async (req, res) => {
   if (!req.body.pomodoro) {
     res.status(400).send("Pomodoro not recieved");
   }
   try {
+    const max = await prisma.pomodoro.aggregate({
+      _max: {
+        order: true,
+      },
+    });
     const add = await prisma.pomodoro.create({
-      data: req.body.pomodoro,
+      data: {
+        ...req.body.pomodoro,
+        order: max._max.order ? max._max.order + 1 : 0,
+      },
     });
     res.status(200).send(add);
   } catch (error) {
@@ -55,7 +84,11 @@ apiRouter.post("/delete", async (req, res) => {
 
 apiRouter.get("/get", async (req, res) => {
   try {
-    const pomodoros = await prisma.pomodoro.findMany();
+    const pomodoros = await prisma.pomodoro.findMany({
+      orderBy: {
+        order: "asc",
+      },
+    });
     res.status(200).send(pomodoros);
   } catch (error) {
     res.status(500);

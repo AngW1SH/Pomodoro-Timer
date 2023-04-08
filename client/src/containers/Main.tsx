@@ -9,6 +9,7 @@ import {
   deletePomodoro,
   getPomodoros,
   savePomodoro,
+  updateOrder,
 } from "../lib/pomodoro";
 
 interface MainProps {}
@@ -66,16 +67,20 @@ const Main: FC<MainProps> = () => {
             : pomodoro
         )
       );
-      savePomodoro({
-        ...pomodoros[completedIndex],
-        repeats: pomodoros[completedIndex].repeats - 1,
-      });
+      savePomodoro(
+        {
+          ...pomodoros[completedIndex],
+          repeats: pomodoros[completedIndex].repeats - 1,
+        },
+        completedIndex
+      );
     }
   };
 
   const onComplete = (id: number) => {
     deletePomodoro(id);
     setPomodoros(pomodoros.filter((pomodoro) => pomodoro.id != id));
+    updateOrder(pomodoros);
   };
 
   const onAdd = () => {
@@ -88,13 +93,20 @@ const Main: FC<MainProps> = () => {
     setPomodoros([...pomodoros, newPomodoro]);
     setEdited(newPomodoro);
     addPomodoro(newPomodoro);
+    updateOrder(pomodoros);
   };
 
   const onSave = (pomodoro: IPomodoro) => {
     setFetchesLeft((fetchesLeftPrev) => fetchesLeftPrev + 1);
-    savePomodoro(pomodoro).then((result) =>
-      setFetchesLeft((fetchesLeftPrev) => fetchesLeftPrev - 1)
+    const order = pomodoros.findIndex(
+      (pomMapped) => pomMapped.id == pomodoro.id
     );
+    if (order) {
+      savePomodoro(pomodoro, order).then((result) =>
+        setFetchesLeft((fetchesLeftPrev) => fetchesLeftPrev - 1)
+      );
+    }
+    updateOrder(pomodoros);
   };
 
   const onTimeout = () => {

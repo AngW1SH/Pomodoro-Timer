@@ -15,4 +15,5 @@ model Pomodoro {
   title       String
   description String
   repeats     Int
+  order       Int    @default(0)
 }

@@ -15,7 +15,7 @@ export const addPomodoro = async (pomodoro: IPomodoro) => {
   return result;
 };
 
-export const savePomodoro = async (pomodoro: IPomodoro) => {
+export const savePomodoro = async (pomodoro: IPomodoro, order: number) => {
   const result = await fetch("/api/save", {
     method: "POST",
     cache: "no-cache",
@@ -23,7 +23,7 @@ export const savePomodoro = async (pomodoro: IPomodoro) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      pomodoro: pomodoro,
+      pomodoro: { ...pomodoro, order: order },
     }),
   }).then((data) => data.json());
 
