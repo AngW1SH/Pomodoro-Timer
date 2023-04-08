@@ -8,11 +8,19 @@ interface EditProps {
   onChange: (edited: IPomodoro) => any;
   onComplete: (id: number) => any;
   onSave: (pomodoro: IPomodoro) => any;
+  fetchesLeft: number;
 }
 
-const Edit: FC<EditProps> = ({ edited, onChange, onComplete, onSave }) => {
+const Edit: FC<EditProps> = ({
+  edited,
+  onChange,
+  onComplete,
+  onSave,
+  fetchesLeft,
+}) => {
   const [opened, setOpened] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const [synced, setSynced] = useState(true);
 
   const handleClose = () => {
     setOpened(false);
@@ -21,24 +29,28 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete, onSave }) => {
   const onTitleChange = (e: ContentEditableEvent) => {
     if (edited) {
       onChange({ ...edited, title: e.target.value });
+      setSynced(false);
     }
   };
 
   const onDescriptionChange = (e: ContentEditableEvent) => {
     if (edited) {
       onChange({ ...edited, description: e.target.value });
+      setSynced(false);
     }
   };
 
   const onRepeatsDecrement = () => {
     if (edited && edited.repeats > 0) {
       onChange({ ...edited, repeats: edited.repeats - 1 });
+      setSynced(false);
     }
   };
 
   const onRepeatsIncrement = () => {
     if (edited) {
       onChange({ ...edited, repeats: edited.repeats + 1 });
+      setSynced(false);
     }
   };
 
@@ -92,12 +104,21 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete, onSave }) => {
     if (edited) setOpened(true);
   }, [edited]);
 
+  useEffect(() => {
+    if (fetchesLeft == 0) setSynced(true);
+  }, [fetchesLeft]);
+
   return (
     <div
       className={`fixed ${
         opened ? "right-0" : "right-[-40%]"
       } top-0 flex h-screen w-4/12 flex-col justify-start bg-white pl-6 pr-6 pt-10 transition-[right] duration-300`}
     >
+      <div
+        className={`absolute right-3 top-3 h-3 w-3 rounded-full ${
+          synced ? "bg-green-300" : "bg-yellow-300"
+        }`}
+      />
       <ContentEditable
         onChange={onTitleChange}
         onKeyDown={handleTitleKeydown}

@@ -26,6 +26,8 @@ const Main: FC<MainProps> = () => {
   const [edited, setEdited] = useState<IPomodoro | null>(null);
   const [pomodoros, setPomodoros] = useState<IPomodoro[]>([]);
 
+  const [fetchesLeft, setFetchesLeft] = useState(0);
+
   const onPomodoroClick = (pomodoro: IPomodoro) => {
     setEdited({ ...pomodoro });
   };
@@ -89,7 +91,10 @@ const Main: FC<MainProps> = () => {
   };
 
   const onSave = (pomodoro: IPomodoro) => {
-    savePomodoro(pomodoro);
+    setFetchesLeft((fetchesLeftPrev) => fetchesLeftPrev + 1);
+    savePomodoro(pomodoro).then((result) =>
+      setFetchesLeft((fetchesLeftPrev) => fetchesLeftPrev - 1)
+    );
   };
 
   const onTimeout = () => {
@@ -120,6 +125,7 @@ const Main: FC<MainProps> = () => {
         onComplete={onComplete}
         onChange={setEdited}
         onSave={onSave}
+        fetchesLeft={fetchesLeft}
       />
     </div>
   );
