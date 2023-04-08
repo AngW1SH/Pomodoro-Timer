@@ -7,6 +7,10 @@ import Edit from "../components/Edit";
 
 interface MainProps {}
 
+/* 
+The purpose of only rendering the EditMenu once is to have the animations
+without adding too much unnecessary state
+*/
 const EditWithMemo = React.memo(Edit, (props, newProps) => false);
 
 const Main: FC<MainProps> = () => {
