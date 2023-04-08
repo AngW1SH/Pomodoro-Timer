@@ -48,6 +48,10 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete }) => {
     setOpened(false);
   };
 
+  const handleTitleKeydown = (e: React.KeyboardEvent) => {
+    if (e.key == "Enter") e.preventDefault();
+  };
+
   const handleDescriptionKeydown = (e: React.KeyboardEvent) => {
     if (e.key == "Enter" && e.shiftKey == false && ref.current) {
       e.preventDefault();
@@ -55,11 +59,16 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete }) => {
       if (selection) {
         const range = selection.getRangeAt(0);
         const br = document.createElement("br");
+        const endOfLine =
+          range.endOffset === range.endContainer.textContent!.length;
         range.insertNode(br);
         range.setStartAfter(br);
         range.setEndAfter(br);
         selection.removeAllRanges();
         selection.addRange(range);
+        if (endOfLine) {
+          ref.current.appendChild(document.createElement("br"));
+        }
       }
     }
   };
@@ -83,6 +92,7 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete }) => {
     >
       <ContentEditable
         onChange={onTitleChange}
+        onKeyDown={handleTitleKeydown}
         html={edited ? edited.title : ""}
         placeholder="Title"
         className="relative mb-4 text-4xl outline-none before:hidden before:text-gray-600 empty:before:block empty:before:content-[attr(placeholder)]"

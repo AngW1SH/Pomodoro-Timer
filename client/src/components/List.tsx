@@ -27,14 +27,23 @@ const List: FC<ListProps> = ({ pomodoros, onClick, onAdd }) => {
             key={pomodoro.id}
             className={`${
               pomodoro.repeats == 0 ? "bg-gray-200" : "bg-white"
-            } relative mb-6 flex cursor-pointer items-end justify-center border border-black py-4`}
+            } relative mb-6 flex h-16 cursor-pointer items-end justify-center border border-black py-4`}
           >
-            <div className="ml-4 mr-5 whitespace-nowrap text-xl font-bold">
-              {pomodoro.title}
-            </div>
-            <div className="mr-20 overflow-hidden whitespace-nowrap">
-              {pomodoro.description.replace(/(<([^>]+)>)/gi, " ")}
-            </div>
+            <div
+              className="ml-4 mr-5 whitespace-nowrap text-xl font-bold"
+              dangerouslySetInnerHTML={{
+                __html: pomodoro.title.replace(/(<([^>]+)>|&nbsp;)/gi, " "),
+              }}
+            ></div>
+            <div
+              className="mr-20 overflow-hidden whitespace-nowrap"
+              dangerouslySetInnerHTML={{
+                __html: pomodoro.description.replace(
+                  /(<([^>]+)>|&nbsp;)/gi,
+                  " "
+                ),
+              }}
+            ></div>
             <div
               className={`${
                 pomodoro.repeats == 0 ? "bg-gray-200" : "bg-white"
