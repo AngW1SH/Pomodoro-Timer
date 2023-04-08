@@ -50,3 +50,23 @@ export const getPomodoros = async () => {
 
   return result;
 };
+
+export const updateOrder = async (pomodoros: IPomodoro[]) => {
+  const info = pomodoros.map((pomodoro, index) => ({
+    id: pomodoro.id,
+    order: index,
+  }));
+
+  const result = await fetch("/api/updateorder", {
+    method: "POST",
+    cache: "no-cache",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      info: info,
+    }),
+  }).then((data) => data.json());
+
+  return result;
+};
