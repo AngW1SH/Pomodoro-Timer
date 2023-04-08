@@ -1,6 +1,7 @@
 import React, { FC, useEffect, useRef, useState } from "react";
 import { EditAction, EditActionKind, IPomodoro } from "../../types";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
+import { useDebounce } from "../hooks/useDebounce";
 
 interface EditProps {
   edited: IPomodoro | null;
@@ -79,6 +80,14 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete, onSave }) => {
       onSave(editedInner);
     }
   };
+
+  const debouncedEditedInner = useDebounce(editedInner, 300);
+
+  useEffect(() => {
+    if (debouncedEditedInner) {
+      onSave(debouncedEditedInner);
+    }
+  }, [debouncedEditedInner]);
 
   useEffect(() => {
     /*
