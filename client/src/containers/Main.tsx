@@ -65,6 +65,12 @@ const Main: FC<MainProps> = () => {
     setPomodoros(pomodoros.filter((pomodoro) => pomodoro.id != id));
   };
 
+  const onAdd = () => {
+    const newPomodoro = { id: 100, title: "", description: "", repeats: 1 };
+    setPomodoros([...pomodoros, newPomodoro]);
+    setEdited(newPomodoro);
+  };
+
   const onTimeout = () => {
     if (phase == Phase.Work) completeClosestPomodoro();
     changePhase();
@@ -78,7 +84,7 @@ const Main: FC<MainProps> = () => {
         callback={onTimeout}
         phase={phase}
       />
-      <List onClick={onPomodoroClick} pomodoros={pomodoros} />
+      <List onClick={onPomodoroClick} pomodoros={pomodoros} onAdd={onAdd} />
       <EditWithMemo
         edited={edited}
         onComplete={onComplete}
