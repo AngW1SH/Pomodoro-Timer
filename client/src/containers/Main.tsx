@@ -131,7 +131,12 @@ const Main: FC<MainProps> = () => {
         callback={onTimeout}
         phase={phase}
       />
-      <List onClick={onPomodoroClick} pomodoros={pomodoros} onAdd={onAdd} />
+      <List
+        onClick={onPomodoroClick}
+        pomodoros={pomodoros}
+        setPomodoros={setPomodoros}
+        onAdd={onAdd}
+      />
       <EditWithMemo
         edited={edited}
         onComplete={onComplete}
