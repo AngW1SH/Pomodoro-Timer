@@ -4,6 +4,7 @@ import List from "../components/List";
 import { staticPomodoros } from "../components/static";
 import { IPomodoro, Phase, Time } from "../../types";
 import Edit from "../components/Edit";
+import { addPomodoro } from "../lib/pomodoro";
 
 interface MainProps {}
 
@@ -74,6 +75,7 @@ const Main: FC<MainProps> = () => {
     const newPomodoro = { id: newId, title: "", description: "", repeats: 1 };
     setPomodoros([...pomodoros, newPomodoro]);
     setEdited(newPomodoro);
+    addPomodoro(newPomodoro);
   };
 
   const onTimeout = () => {
