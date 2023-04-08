@@ -64,6 +64,10 @@ const Main: FC<MainProps> = () => {
             : pomodoro
         )
       );
+      savePomodoro({
+        ...pomodoros[completedIndex],
+        repeats: pomodoros[completedIndex].repeats - 1,
+      });
     }
   };
 
