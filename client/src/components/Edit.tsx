@@ -74,12 +74,6 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete, onSave }) => {
     }
   };
 
-  const handleSave = () => {
-    if (edited) {
-      onSave(edited);
-    }
-  };
-
   const debouncedEdited = useDebounce(edited, 300);
 
   useEffect(() => {
@@ -145,9 +139,6 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete, onSave }) => {
           className="mb-3 border border-gray-400 px-10 py-2"
         >
           Mark as done
-        </div>
-        <div className="border border-gray-400 px-10 py-2" onClick={handleSave}>
-          Save
         </div>
       </div>
       <div
