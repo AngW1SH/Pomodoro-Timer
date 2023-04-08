@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import Timer from "../components/Timer";
 import List from "../components/List";
 import { staticPomodoros } from "../components/static";
@@ -21,12 +21,22 @@ const Main: FC<MainProps> = () => {
     setEdited({ ...pomodoro });
   };
 
+  useEffect(() => {
+    if (edited) {
+      setPomodoros(
+        pomodoros.map((pomodoro) =>
+          pomodoro.id == edited.id ? edited : pomodoro
+        )
+      );
+    }
+  }, [edited]);
+
   const onTimeout = () => {};
   return (
     <div className="flex h-screen">
       <Timer initialTime={20} callback={onTimeout} />
       <List onClick={onPomodoroClick} pomodoros={pomodoros} />
-      <EditWithMemo edited={edited} />
+      <EditWithMemo edited={edited} onChange={setEdited} />
     </div>
   );
 };
