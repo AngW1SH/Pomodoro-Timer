@@ -66,7 +66,12 @@ const Main: FC<MainProps> = () => {
   };
 
   const onAdd = () => {
-    const newPomodoro = { id: 100, title: "", description: "", repeats: 1 };
+    const newId =
+      pomodoros.reduce(
+        (maxId, pomodoro) => (maxId < pomodoro.id ? pomodoro.id : maxId),
+        0
+      ) + 1;
+    const newPomodoro = { id: newId, title: "", description: "", repeats: 1 };
     setPomodoros([...pomodoros, newPomodoro]);
     setEdited(newPomodoro);
   };
