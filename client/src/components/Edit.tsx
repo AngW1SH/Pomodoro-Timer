@@ -5,10 +5,11 @@ import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 interface EditProps {
   edited: IPomodoro | null;
   onChange: (edited: IPomodoro) => any;
+  onComplete: (id: number) => any;
 }
 
-const Edit: FC<EditProps> = ({ edited, onChange }) => {
-  const [opened, setOpened] = useState(true);
+const Edit: FC<EditProps> = ({ edited, onChange, onComplete }) => {
+  const [opened, setOpened] = useState(false);
   const [editedInner, setEditedInner] = useState(edited);
 
   const handleClose = () => {
@@ -37,6 +38,13 @@ const Edit: FC<EditProps> = ({ edited, onChange }) => {
     if (editedInner) {
       onChange({ ...editedInner, repeats: editedInner.repeats + 1 });
     }
+  };
+
+  const handleComplete = () => {
+    if (editedInner) {
+      onComplete(editedInner.id);
+    }
+    setOpened(false);
   };
 
   useEffect(() => {
@@ -88,7 +96,10 @@ const Edit: FC<EditProps> = ({ edited, onChange }) => {
             </div>
           </div>
         </div>
-        <div className="mb-3 border border-gray-400 px-10 py-2">
+        <div
+          onClick={handleComplete}
+          className="mb-3 border border-gray-400 px-10 py-2"
+        >
           Mark as done
         </div>
         <div className="border border-gray-400 px-10 py-2">Save</div>

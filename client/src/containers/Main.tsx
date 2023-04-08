@@ -61,10 +61,15 @@ const Main: FC<MainProps> = () => {
     }
   };
 
+  const onComplete = (id: number) => {
+    setPomodoros(pomodoros.filter((pomodoro) => pomodoro.id != id));
+  };
+
   const onTimeout = () => {
     if (phase == Phase.Work) completeClosestPomodoro();
     changePhase();
   };
+
   return (
     <div className="flex h-screen">
       <Timer
@@ -74,7 +79,11 @@ const Main: FC<MainProps> = () => {
         phase={phase}
       />
       <List onClick={onPomodoroClick} pomodoros={pomodoros} />
-      <EditWithMemo edited={edited} onChange={setEdited} />
+      <EditWithMemo
+        edited={edited}
+        onComplete={onComplete}
+        onChange={setEdited}
+      />
     </div>
   );
 };

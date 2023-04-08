@@ -22,7 +22,9 @@ const List: FC<ListProps> = ({ pomodoros, onClick }) => {
       {pomodoros.map((pomodoro) => (
         <div
           key={pomodoro.id}
-          className="relative mb-6 flex cursor-pointer items-end justify-center border border-black py-4"
+          className={`${
+            pomodoro.repeats == 0 ? "bg-gray-200" : "bg-white"
+          } relative mb-6 flex cursor-pointer items-end justify-center border border-black py-4`}
         >
           <div className="ml-4 mr-5 whitespace-nowrap text-xl font-bold">
             {pomodoro.title}
@@ -30,7 +32,11 @@ const List: FC<ListProps> = ({ pomodoros, onClick }) => {
           <div className="mr-20 overflow-hidden whitespace-nowrap">
             {pomodoro.description}
           </div>
-          <div className="absolute right-0 top-0 flex h-full w-14 items-center justify-center border-l border-black bg-white">
+          <div
+            className={`${
+              pomodoro.repeats == 0 ? "bg-gray-200" : "bg-white"
+            } absolute right-0 top-0 flex h-full w-14 items-center justify-center border-l border-black bg-white`}
+          >
             {pomodoro.repeats}
           </div>
         </div>
