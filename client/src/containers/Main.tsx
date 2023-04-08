@@ -4,7 +4,12 @@ import List from "../components/List";
 import { staticPomodoros } from "../components/static";
 import { IPomodoro, Phase, Time } from "../../types";
 import Edit from "../components/Edit";
-import { addPomodoro, getPomodoros, savePomodoro } from "../lib/pomodoro";
+import {
+  addPomodoro,
+  deletePomodoro,
+  getPomodoros,
+  savePomodoro,
+} from "../lib/pomodoro";
 
 interface MainProps {}
 
@@ -63,6 +68,7 @@ const Main: FC<MainProps> = () => {
   };
 
   const onComplete = (id: number) => {
+    deletePomodoro(id);
     setPomodoros(pomodoros.filter((pomodoro) => pomodoro.id != id));
   };
 

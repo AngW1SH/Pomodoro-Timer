@@ -30,6 +30,21 @@ export const savePomodoro = async (pomodoro: IPomodoro) => {
   return result;
 };
 
+export const deletePomodoro = async (id: number) => {
+  const result = await fetch("/api/delete", {
+    method: "POST",
+    cache: "no-cache",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id: id,
+    }),
+  }).then((data) => data.json());
+
+  return result;
+};
+
 export const getPomodoros = async () => {
   const result = await fetch("/api/get").then((data) => data.json());
 

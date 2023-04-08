@@ -23,6 +23,15 @@ apiRouter.post("/save", async (req, res) => {
   res.status(200).send(add);
 });
 
+apiRouter.post("/delete", async (req, res) => {
+  const deleted = await prisma.pomodoro.delete({
+    where: {
+      id: req.body.id,
+    },
+  });
+  res.status(200).send(deleted);
+});
+
 apiRouter.get("/get", async (req, res) => {
   const pomodoros = await prisma.pomodoro.findMany();
   res.status(200).send(pomodoros);
