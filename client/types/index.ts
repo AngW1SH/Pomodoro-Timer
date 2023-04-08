@@ -11,8 +11,8 @@ export enum Phase {
 }
 
 export enum Time {
-  Rest = 5,
-  Work = 2,
+  Rest = 5 * 60,
+  Work = 25 * 60,
 }
 
 export enum EditActionKind {
