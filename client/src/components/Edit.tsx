@@ -12,7 +12,6 @@ interface EditProps {
 
 const Edit: FC<EditProps> = ({ edited, onChange, onComplete, onSave }) => {
   const [opened, setOpened] = useState(false);
-  const [editedInner, setEditedInner] = useState(edited);
   const ref = useRef<HTMLDivElement>(null);
 
   const handleClose = () => {
@@ -20,32 +19,32 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete, onSave }) => {
   };
 
   const onTitleChange = (e: ContentEditableEvent) => {
-    if (editedInner) {
-      onChange({ ...editedInner, title: e.target.value });
+    if (edited) {
+      onChange({ ...edited, title: e.target.value });
     }
   };
 
   const onDescriptionChange = (e: ContentEditableEvent) => {
-    if (editedInner) {
-      onChange({ ...editedInner, description: e.target.value });
+    if (edited) {
+      onChange({ ...edited, description: e.target.value });
     }
   };
 
   const onRepeatsDecrement = () => {
-    if (editedInner && editedInner.repeats > 0) {
-      onChange({ ...editedInner, repeats: editedInner.repeats - 1 });
+    if (edited && edited.repeats > 0) {
+      onChange({ ...edited, repeats: edited.repeats - 1 });
     }
   };
 
   const onRepeatsIncrement = () => {
-    if (editedInner) {
-      onChange({ ...editedInner, repeats: editedInner.repeats + 1 });
+    if (edited) {
+      onChange({ ...edited, repeats: edited.repeats + 1 });
     }
   };
 
   const handleComplete = () => {
-    if (editedInner) {
-      onComplete(editedInner.id);
+    if (edited) {
+      onComplete(edited.id);
     }
     setOpened(false);
   };
@@ -76,18 +75,18 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete, onSave }) => {
   };
 
   const handleSave = () => {
-    if (editedInner) {
-      onSave(editedInner);
+    if (edited) {
+      onSave(edited);
     }
   };
 
-  const debouncedEditedInner = useDebounce(editedInner, 300);
+  const debouncededited = useDebounce(edited, 300);
 
   useEffect(() => {
-    if (debouncedEditedInner) {
-      onSave(debouncedEditedInner);
+    if (debouncededited) {
+      onSave(debouncededited);
     }
-  }, [debouncedEditedInner]);
+  }, [debouncededited]);
 
   useEffect(() => {
     /*
@@ -97,7 +96,6 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete, onSave }) => {
     */
 
     if (edited) setOpened(true);
-    setEditedInner(edited);
   }, [edited]);
 
   return (
