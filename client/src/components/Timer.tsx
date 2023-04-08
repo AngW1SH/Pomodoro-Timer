@@ -1,13 +1,15 @@
 import React, { FC, useEffect, useRef, useState } from "react";
+import { Phase, Time } from "../../types";
 
 interface TimerProps {
-  initialTime: number;
+  initialTime: Time;
   callback: () => any;
+  phase: Phase;
 }
 
-const Timer: FC<TimerProps> = ({ initialTime, callback }) => {
+const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
   const [time, setTime] = useState(initialTime);
-  const [stopped, setStopped] = useState(false);
+  const [stopped, setStopped] = useState(true);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const formatTime = (timeToFormat: number) => {
@@ -61,8 +63,6 @@ const Timer: FC<TimerProps> = ({ initialTime, callback }) => {
   };
 
   useEffect(() => {
-    launchTimer(initialTime);
-
     return () => {
       if (timer.current) clearInterval(timer.current);
     };
@@ -77,19 +77,20 @@ const Timer: FC<TimerProps> = ({ initialTime, callback }) => {
         onClick={handleStop}
         className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize"
       >
-        {stopped ? "Resume Timer" : "Stop Timer"}
+        {stopped ? "Start Timer" : "Stop Timer"}
       </div>
       <div
         onClick={handleSkip}
         className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize"
       >
-        Skip Pomodoro
+        Skip {phase == Phase.Work && "pomodoro"} {phase == Phase.Rest && "rest"}
       </div>
       <div
         onClick={handleReset}
         className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize"
       >
-        Reset Pomodoro
+        Reset {phase == Phase.Work && "pomodoro"}{" "}
+        {phase == Phase.Rest && "rest"}
       </div>
     </div>
   );
