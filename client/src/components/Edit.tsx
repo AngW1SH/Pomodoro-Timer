@@ -6,9 +6,10 @@ interface EditProps {
   edited: IPomodoro | null;
   onChange: (edited: IPomodoro) => any;
   onComplete: (id: number) => any;
+  onSave: (pomodoro: IPomodoro) => any;
 }
 
-const Edit: FC<EditProps> = ({ edited, onChange, onComplete }) => {
+const Edit: FC<EditProps> = ({ edited, onChange, onComplete, onSave }) => {
   const [opened, setOpened] = useState(false);
   const [editedInner, setEditedInner] = useState(edited);
   const ref = useRef<HTMLDivElement>(null);
@@ -73,6 +74,12 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete }) => {
     }
   };
 
+  const handleSave = () => {
+    if (editedInner) {
+      onSave(editedInner);
+    }
+  };
+
   useEffect(() => {
     /*
     Potential Problems:
@@ -132,7 +139,9 @@ const Edit: FC<EditProps> = ({ edited, onChange, onComplete }) => {
         >
           Mark as done
         </div>
-        <div className="border border-gray-400 px-10 py-2">Save</div>
+        <div className="border border-gray-400 px-10 py-2" onClick={handleSave}>
+          Save
+        </div>
       </div>
       <div
         className="absolute -left-10 top-0 flex h-full w-10 items-center justify-center border-x bg-white after:block after:h-px after:w-7 after:bg-gray-400 hover:bg-gray-100"

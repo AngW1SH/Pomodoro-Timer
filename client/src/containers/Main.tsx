@@ -4,7 +4,7 @@ import List from "../components/List";
 import { staticPomodoros } from "../components/static";
 import { IPomodoro, Phase, Time } from "../../types";
 import Edit from "../components/Edit";
-import { addPomodoro } from "../lib/pomodoro";
+import { addPomodoro, getPomodoros, savePomodoro } from "../lib/pomodoro";
 
 interface MainProps {}
 
@@ -19,7 +19,7 @@ const Main: FC<MainProps> = () => {
   const [phase, setPhase] = useState<Phase>(Phase.Work);
   const [initialTime, setInitialTime] = useState<Time>(Time.Work);
   const [edited, setEdited] = useState<IPomodoro | null>(null);
-  const [pomodoros, setPomodoros] = useState(staticPomodoros);
+  const [pomodoros, setPomodoros] = useState<IPomodoro[]>([]);
 
   const onPomodoroClick = (pomodoro: IPomodoro) => {
     setEdited({ ...pomodoro });
@@ -78,10 +78,23 @@ const Main: FC<MainProps> = () => {
     addPomodoro(newPomodoro);
   };
 
+  const onSave = (pomodoro: IPomodoro) => {
+    savePomodoro(pomodoro);
+  };
+
   const onTimeout = () => {
     if (phase == Phase.Work) completeClosestPomodoro();
     changePhase();
   };
+
+  const fetchPomodoros = async () => {
+    const pomodorosFromServer = await getPomodoros();
+    setPomodoros(pomodorosFromServer);
+  };
+
+  useEffect(() => {
+    fetchPomodoros();
+  }, []);
 
   return (
     <div className="flex h-screen">
@@ -96,6 +109,7 @@ const Main: FC<MainProps> = () => {
         edited={edited}
         onComplete={onComplete}
         onChange={setEdited}
+        onSave={onSave}
       />
     </div>
   );
