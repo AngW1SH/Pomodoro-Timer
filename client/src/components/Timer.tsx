@@ -70,6 +70,9 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
 
   return (
     <div className="flex h-full w-5/12 flex-col items-center justify-center border-r border-black">
+      <div className="-mt-6 mb-12 text-5xl">
+        {phase == Phase.Work ? "Focus" : "Rest"}
+      </div>
       <div className="mb-16 font-mono text-9xl tracking-wide">
         {time >= 0 ? formatTime(time) : "00:00"}
       </div>
