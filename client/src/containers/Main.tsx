@@ -92,6 +92,7 @@ const Main: FC<MainProps> = () => {
     setPomodoros([...pomodoros, newPomodoro]);
     setEdited(newPomodoro);
     addPomodoro(newPomodoro);
+    updateOrder(pomodoros);
   };
 
   const onSave = (pomodoro: IPomodoro) => {
@@ -104,6 +105,11 @@ const Main: FC<MainProps> = () => {
         setFetchesLeft((fetchesLeftPrev) => fetchesLeftPrev - 1)
       );
     }
+  };
+
+  const swapPomodoros = (pomodoros: IPomodoro[]) => {
+    setPomodoros(pomodoros);
+    updateOrder(pomodoros);
   };
 
   const onTimeout = () => {
@@ -131,7 +137,7 @@ const Main: FC<MainProps> = () => {
       <List
         onClick={onPomodoroClick}
         pomodoros={pomodoros}
-        setPomodoros={setPomodoros}
+        setPomodoros={swapPomodoros}
         onAdd={onAdd}
       />
       <EditWithMemo

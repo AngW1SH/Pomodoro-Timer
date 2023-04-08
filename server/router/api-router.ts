@@ -10,21 +10,23 @@ apiRouter.post("/updateorder", async (req, res) => {
   if (!req.body.info) {
     res.status(400).send("Info not recieved");
   }
-
-  const result = await Promise.all(
-    req.body.info.map(({ id, order }) =>
-      prisma.pomodoro.update({
-        where: {
-          id: id,
-        },
-        data: {
-          order: order,
-        },
-      })
-    )
-  );
-
-  return result;
+  try {
+    const result = await Promise.all(
+      req.body.info.map(({ id, order }) =>
+        prisma.pomodoro.update({
+          where: {
+            id: id,
+          },
+          data: {
+            order: order,
+          },
+        })
+      )
+    );
+    res.status(200);
+  } catch (error) {
+    res.status(500);
+  }
 });
 
 apiRouter.post("/add", async (req, res) => {
