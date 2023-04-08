@@ -56,10 +56,12 @@ export const updateOrder = async (pomodoros: IPomodoro[]) => {
     id: pomodoro.id,
     order: index,
   }));
-
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), 6000);
   const result = await fetch("/api/updateorder", {
     method: "POST",
     cache: "no-cache",
+    signal: controller.signal,
     headers: {
       "Content-Type": "application/json",
     },
@@ -67,6 +69,8 @@ export const updateOrder = async (pomodoros: IPomodoro[]) => {
       info: info,
     }),
   }).then((data) => data.json());
+
+  clearTimeout(id);
 
   return result;
 };
