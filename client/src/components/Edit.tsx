@@ -111,11 +111,11 @@ const Edit: FC<EditProps> = ({
   return (
     <div
       className={`fixed ${
-        opened ? "right-0" : "right-[-40%]"
-      } top-0 flex h-screen w-4/12 flex-col justify-start bg-white pl-6 pr-6 pt-10 transition-[right] duration-300`}
+        opened ? "right-0" : "sm:right[-75%] right-[-100%] md:right-[-40%]"
+      } top-0 flex h-screen w-full flex-col justify-start border-l bg-white pl-6 pr-6 pt-20 transition-[right] duration-300 sm:w-9/12 md:w-4/12 md:border-l-0 md:pt-10`}
     >
       <div
-        className={`absolute right-3 top-3 h-3 w-3 rounded-full ${
+        className={`absolute right-3 top-14 h-3 w-3 rounded-full md:top-3 ${
           synced ? "bg-green-300" : "bg-yellow-300"
         }`}
       />
@@ -163,7 +163,7 @@ const Edit: FC<EditProps> = ({
         </div>
       </div>
       <div
-        className="absolute -left-10 top-0 flex h-full w-10 items-center justify-center border-x bg-white after:block after:h-px after:w-7 after:bg-gray-400 hover:bg-gray-100"
+        className="absolute left-0 top-0 flex h-10 w-full items-center justify-center border-x bg-gray-100 after:block after:h-px after:w-7 after:bg-gray-400 hover:bg-gray-200 md:-left-10 md:h-full md:w-10 md:bg-white md:hover:bg-gray-100"
         onClick={handleClose}
       ></div>
     </div>

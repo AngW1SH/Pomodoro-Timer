@@ -127,7 +127,7 @@ const List: FC<ListProps> = ({ pomodoros, setPomodoros, onClick, onAdd }) => {
             <div
               className={`${
                 pomodoro.repeats == 0 ? "bg-gray-200" : "bg-white"
-              } relative mb-8 flex h-16 cursor-pointer items-end justify-center border border-black py-4`}
+              } relative mb-8 flex h-16 cursor-pointer items-end justify-start overflow-hidden border border-black py-4 md:justify-center`}
             >
               <div
                 className="ml-4 mr-5 whitespace-nowrap text-xl font-bold"
