@@ -1,6 +1,5 @@
-import express, { Express, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
-import { Prisma, PrismaClient } from "@prisma/client";
 
 import path from "path";
 import apiRouter from "./router/api-router";

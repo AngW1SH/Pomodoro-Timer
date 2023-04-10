@@ -1,8 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
+import prisma from "../client";
 var apiRouter = express.Router();
-
-const prisma = new PrismaClient();
 
 //const prisma = new PrismaClient();
 
