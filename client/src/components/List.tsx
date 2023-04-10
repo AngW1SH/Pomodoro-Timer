@@ -89,13 +89,14 @@ const List: FC<ListProps> = ({ pomodoros, setPomodoros, onClick, onAdd }) => {
       if (dragRef.current) dragRef.current.removeAttribute("style");
 
       setDraggedIndex(-1);
-
       window.removeEventListener("mousemove", handleDrag);
       window.removeEventListener("mouseup", handleDragStop);
     };
 
-    window.addEventListener("mousemove", handleDrag);
-    window.addEventListener("mouseup", handleDragStop);
+    if (dragInfo.current.draggedIndex != -1) {
+      window.addEventListener("mousemove", handleDrag);
+      window.addEventListener("mouseup", handleDragStop);
+    }
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -134,7 +135,11 @@ const List: FC<ListProps> = ({ pomodoros, setPomodoros, onClick, onAdd }) => {
 
   return (
     <div className="relative h-full w-7/12 overflow-auto p-10">
-      <div onMouseDown={handleDragStart} onMouseUp={handleClick}>
+      <div
+        onMouseDown={handleDragStart}
+        onMouseUp={handleClick}
+        className="h-full"
+      >
         {pomodoros.map((pomodoro, index) => (
           <div key={pomodoro.id} className="h-24">
             <div
@@ -168,6 +173,12 @@ const List: FC<ListProps> = ({ pomodoros, setPomodoros, onClick, onAdd }) => {
           </div>
         ))}
       </div>
+      {!pomodoros.length && (
+        <div className="pointer-events-none absolute left-0 top-0 -mt-10 flex h-full w-full items-center justify-center text-5xl font-light leading-snug text-gray-400">
+          All done,
+          <br /> good job!
+        </div>
+      )}
       <div
         onClick={onAdd}
         className="absolute bottom-0 left-0 flex h-16 w-full cursor-pointer items-center justify-center bg-gray-100 hover:bg-gray-200"
