@@ -58,19 +58,23 @@ export const updateOrder = async (pomodoros: IPomodoro[]) => {
   }));
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), 6000);
-  const result = await fetch("/api/updateorder", {
-    method: "POST",
-    cache: "no-cache",
-    signal: controller.signal,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      info: info,
-    }),
-  }).then((data) => data.json());
+  try {
+    const result = await fetch("/api/updateorder", {
+      method: "POST",
+      cache: "no-cache",
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        info: info,
+      }),
+    }).then((data) => data.json());
 
-  clearTimeout(id);
+    clearTimeout(id);
 
-  return result;
+    return result;
+  } catch (error) {
+    return "";
+  }
 };
