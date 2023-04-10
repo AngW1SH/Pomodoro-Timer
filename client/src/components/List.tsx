@@ -9,25 +9,6 @@ interface ListProps {
   onAdd: () => any;
 }
 
-function getCoords(elem: Element) {
-  // crossbrowser version
-  var box = elem.getBoundingClientRect();
-
-  var body = document.body;
-  var docEl = document.documentElement;
-
-  var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-  var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-
-  var clientTop = docEl.clientTop || body.clientTop || 0;
-  var clientLeft = docEl.clientLeft || body.clientLeft || 0;
-
-  var top = box.top + scrollTop - clientTop;
-  var left = box.left + scrollLeft - clientLeft;
-
-  return { top: Math.round(top), left: Math.round(left) };
-}
-
 const List: FC<ListProps> = ({ pomodoros, setPomodoros, onClick, onAdd }) => {
   const dragInfo = useRef({
     isDragged: false,
@@ -44,11 +25,12 @@ const List: FC<ListProps> = ({ pomodoros, setPomodoros, onClick, onAdd }) => {
     if (e.target instanceof HTMLElement) {
       Array.from(e.currentTarget.children).forEach((child, index) => {
         if (e.target == child || child.contains(e.target as HTMLElement)) {
+          const box = child.getBoundingClientRect();
           dragInfo.current = {
             isDragged: false,
             draggedIndex: index,
-            x: getCoords(child).left,
-            y: getCoords(child).top,
+            x: box.left,
+            y: box.top,
             width: child.clientWidth,
           };
 
@@ -109,7 +91,7 @@ const List: FC<ListProps> = ({ pomodoros, setPomodoros, onClick, onAdd }) => {
     } else if (dragInfo.current.isDragged) {
       const index = Array.from(e.currentTarget.children).findIndex(
         (child, index) => {
-          return dragInfo.current.y < getCoords(child).top;
+          return dragInfo.current.y < child.getBoundingClientRect().top;
         }
       );
 
