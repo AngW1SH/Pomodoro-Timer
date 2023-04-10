@@ -127,13 +127,14 @@ const Main: FC<MainProps> = () => {
   }, []);
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen flex-col md:flex-row">
       <Timer
         key={"" + initialTime + phase}
         initialTime={initialTime}
         callback={onTimeout}
         phase={phase}
       />
+      <div className="mb-10 md:mb-0" />
       <List
         onClick={onPomodoroClick}
         pomodoros={pomodoros}

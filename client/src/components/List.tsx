@@ -134,11 +134,11 @@ const List: FC<ListProps> = ({ pomodoros, setPomodoros, onClick, onAdd }) => {
   };
 
   return (
-    <div className="relative h-full w-7/12 overflow-auto p-10">
+    <div className="relative h-full w-full p-10 md:w-7/12 md:overflow-auto">
       <div
         onMouseDown={handleDragStart}
         onMouseUp={handleClick}
-        className="h-full"
+        className="h-full pb-10 md:pb-0"
       >
         {pomodoros.map((pomodoro, index) => (
           <div key={pomodoro.id} className="h-24">
