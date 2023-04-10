@@ -11,6 +11,7 @@ import {
   savePomodoro,
   updateOrder,
 } from "../lib/pomodoro";
+import Settings from "../components/Settings";
 
 interface MainProps {}
 
@@ -148,6 +149,7 @@ const Main: FC<MainProps> = () => {
         onSave={onSave}
         fetchesLeft={fetchesLeft}
       />
+      <Settings />
     </div>
   );
 };
