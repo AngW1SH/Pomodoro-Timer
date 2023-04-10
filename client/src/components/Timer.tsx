@@ -78,19 +78,19 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
       </div>
       <div
         onClick={handleStop}
-        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize"
+        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100"
       >
         {stopped ? "Start Timer" : "Stop Timer"}
       </div>
       <div
         onClick={handleSkip}
-        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize"
+        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100"
       >
         Skip {phase == Phase.Work && "pomodoro"} {phase == Phase.Rest && "rest"}
       </div>
       <div
         onClick={handleReset}
-        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize"
+        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100"
       >
         Reset {phase == Phase.Work && "pomodoro"}{" "}
         {phase == Phase.Rest && "rest"}

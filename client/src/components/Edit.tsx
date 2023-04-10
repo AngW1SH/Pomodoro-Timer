@@ -139,25 +139,29 @@ const Edit: FC<EditProps> = ({
           <div className="h-full w-full border-r border-gray-400 px-2 py-2">
             Poms Left
           </div>
-          <div className="flex w-full justify-between">
+          <div className="flex w-full items-center justify-between">
             <div
               onClick={onRepeatsDecrement}
-              className="cursor-pointer select-none py-2 pl-4"
+              className="cursor-pointer select-none py-1 pl-2"
             >
-              -
+              <div className="box-border flex h-7 w-7 items-center justify-center rounded-md hover:bg-gray-100">
+                -
+              </div>
             </div>
             <div className="py-2">{edited ? edited.repeats : "0"}</div>
             <div
               onClick={onRepeatsIncrement}
-              className="cursor-pointer select-none py-2 pr-4"
+              className="cursor-pointer select-none py-1 pr-2"
             >
-              +
+              <div className="box-border flex h-7 w-7 items-center justify-center rounded-md hover:bg-gray-100">
+                +
+              </div>
             </div>
           </div>
         </div>
         <div
           onClick={handleComplete}
-          className="mb-3 border border-gray-400 px-10 py-2"
+          className="mb-3 cursor-pointer border border-gray-400 px-10 py-2 hover:bg-gray-100"
         >
           Mark as done
         </div>

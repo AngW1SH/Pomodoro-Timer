@@ -126,7 +126,9 @@ const List: FC<ListProps> = ({ pomodoros, setPomodoros, onClick, onAdd }) => {
           <div key={pomodoro.id} className="h-24">
             <div
               className={`${
-                pomodoro.repeats == 0 ? "bg-gray-200" : "bg-white"
+                pomodoro.repeats == 0
+                  ? "bg-gray-200"
+                  : "group bg-white hover:bg-gray-100"
               } relative mb-8 flex h-16 cursor-pointer items-end justify-start overflow-hidden border border-black py-4 md:justify-center`}
             >
               <div
@@ -146,8 +148,10 @@ const List: FC<ListProps> = ({ pomodoros, setPomodoros, onClick, onAdd }) => {
               ></div>
               <div
                 className={`${
-                  pomodoro.repeats == 0 ? "bg-gray-200" : "bg-white"
-                } absolute right-0 top-0 flex h-full w-14 items-center justify-center border-l border-black bg-white`}
+                  pomodoro.repeats == 0
+                    ? "bg-gray-200"
+                    : "bg-white group-hover:bg-gray-100"
+                } absolute right-0 top-0 flex h-full w-14 items-center justify-center border-l border-black`}
               >
                 {pomodoro.repeats}
               </div>
