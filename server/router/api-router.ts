@@ -122,7 +122,7 @@ apiRouter.post("/register", async (req, res) => {
         });
       });
     } else {
-      res.status(403).send({ status: 403 });
+      res.status(401).send({ status: 401 });
     }
   } catch (error) {
     res.status(500).send({ status: 500 });
@@ -143,7 +143,7 @@ apiRouter.post("/login", async (req, res) => {
     });
 
     if (doesUserExist === null) {
-      res.status(403).send({ status: 403 });
+      res.status(401).send({ status: 401 });
       return;
     }
 
@@ -154,7 +154,7 @@ apiRouter.post("/login", async (req, res) => {
         if (result) {
           res.status(200).send({ status: 200 });
         } else {
-          res.status(403).send({ status: 403 });
+          res.status(401).send({ status: 401 });
         }
       }
     );
