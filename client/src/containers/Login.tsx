@@ -75,24 +75,6 @@ const Login: FC<LoginProps> = () => {
     return handleInput;
   };
 
-  const handleMessage = (
-    actionType: ActionTypes,
-    field: string,
-    message: string,
-    value: string
-  ) => {
-    setFormData({
-      ...formData,
-      [actionType]: {
-        ...formData[actionType],
-        [field]: {
-          message: message,
-          value: value,
-        },
-      },
-    });
-  };
-
   const handleStartRegistering = () => {
     setRegistering(true);
   };
