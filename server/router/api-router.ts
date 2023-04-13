@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import prisma from "../client";
+import bcrypt, { hash } from "bcryptjs";
 var apiRouter = express.Router();
 
 //const prisma = new PrismaClient();
@@ -93,6 +94,72 @@ apiRouter.get("/get", async (req, res) => {
     res.status(200).send(pomodoros);
   } catch (error) {
     res.status(500);
+  }
+});
+
+apiRouter.post("/register", async (req, res) => {
+  try {
+    if (!req.body.email || !req.body.password) {
+      res.status(400).send({ status: 400 });
+    }
+
+    const doesUserExist = await prisma.user.findFirst({
+      where: {
+        email: req.body.email,
+      },
+    });
+
+    if (doesUserExist === null) {
+      bcrypt.genSalt(10, function (err, salt) {
+        bcrypt.hash(req.body.password, salt, async (err, hashedPassword) => {
+          const result = await prisma.user.create({
+            data: {
+              email: req.body.email,
+              password: hashedPassword,
+            },
+          });
+          res.status(200).send({ status: 200 });
+        });
+      });
+    } else {
+      res.status(403).send({ status: 403 });
+    }
+  } catch (error) {
+    res.status(500).send({ status: 500 });
+  }
+});
+
+apiRouter.post("/login", async (req, res) => {
+  try {
+    if (!req.body.email || !req.body.password) {
+      res.status(400).send({ status: 400 });
+      return;
+    }
+
+    const doesUserExist = await prisma.user.findFirst({
+      where: {
+        email: req.body.email,
+      },
+    });
+
+    if (doesUserExist === null) {
+      res.status(403).send({ status: 403 });
+      return;
+    }
+
+    bcrypt.compare(
+      req.body.password,
+      doesUserExist!.password,
+      function (err, result) {
+        if (result) {
+          res.status(200).send({ status: 200 });
+        } else {
+          res.status(403).send({ status: 403 });
+        }
+      }
+    );
+  } catch (error) {
+    res.status(500).send({ status: 500 });
   }
 });
 
