@@ -27,7 +27,5 @@ export const loginUser = async (email: string, password: string) => {
     }),
   }).then((response) => response.status);
 
-  console.log(result);
-
   return result;
 };

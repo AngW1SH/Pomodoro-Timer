@@ -100,7 +100,8 @@ apiRouter.get("/get", async (req, res) => {
 apiRouter.post("/register", async (req, res) => {
   try {
     if (!req.body.email || !req.body.password) {
-      res.status(400).send({ status: 400 });
+      res.status(400).send();
+      return;
     }
 
     const doesUserExist = await prisma.user.findFirst({
@@ -118,21 +119,24 @@ apiRouter.post("/register", async (req, res) => {
               password: hashedPassword,
             },
           });
-          res.status(200).send({ status: 200 });
+          res.status(200).send();
+          return;
         });
       });
     } else {
-      res.status(401).send({ status: 401 });
+      res.status(401).send();
+      return;
     }
   } catch (error) {
-    res.status(500).send({ status: 500 });
+    res.status(500).send();
+    return;
   }
 });
 
 apiRouter.post("/login", async (req, res) => {
   try {
     if (!req.body.email || !req.body.password) {
-      res.status(400).send({ status: 400 });
+      res.status(400).send();
       return;
     }
 
@@ -143,7 +147,7 @@ apiRouter.post("/login", async (req, res) => {
     });
 
     if (doesUserExist === null) {
-      res.status(401).send({ status: 401 });
+      res.status(401).send();
       return;
     }
 
@@ -152,14 +156,14 @@ apiRouter.post("/login", async (req, res) => {
       doesUserExist!.password,
       function (err, result) {
         if (result) {
-          res.status(200).send({ status: 200 });
+          res.status(200).send();
         } else {
-          res.status(401).send({ status: 401 });
+          res.status(401).send();
         }
       }
     );
   } catch (error) {
-    res.status(500).send({ status: 500 });
+    res.status(500).send();
   }
 });
 

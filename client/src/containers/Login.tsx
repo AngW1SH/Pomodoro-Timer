@@ -152,8 +152,8 @@ const Login: FC<LoginProps> = () => {
       setFormData({ ...formData, login: loginData });
     } else {
       const result = await loginUser(
-        formData.register.email.value,
-        formData.register.password.value
+        formData.login.email.value,
+        formData.login.password.value
       );
     }
   };
