@@ -1,10 +1,11 @@
 import React, { FC, useEffect, useRef, useState } from "react";
-import { Phase, Time } from "../../types";
+import { IPhase, PhaseKeys, Time } from "../../types";
+import { phaseNames } from "./static";
 
 interface TimerProps {
   initialTime: Time;
   callback: () => any;
-  phase: Phase;
+  phase: string;
 }
 
 const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
@@ -71,7 +72,7 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center border-b border-black pb-12 md:w-5/12 md:border-b-0 md:border-r md:pb-0">
       <div className="mb-12 mt-12 text-5xl md:-mt-6">
-        {phase == Phase.Work ? "Focus" : "Rest"}
+        {phase == phaseNames[PhaseKeys.Work] ? "Focus" : "Rest"}
       </div>
       <div className="mb-16 font-mono text-8xl tracking-wide xs:text-9xl md:text-8xl lg:text-9xl">
         {time >= 0 ? formatTime(time) : "00:00"}
@@ -86,14 +87,15 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
         onClick={handleSkip}
         className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100"
       >
-        Skip {phase == Phase.Work && "pomodoro"} {phase == Phase.Rest && "rest"}
+        Skip {phase == phaseNames[PhaseKeys.Work] && "pomodoro"}{" "}
+        {phase == phaseNames[PhaseKeys.Rest] && "rest"}
       </div>
       <div
         onClick={handleReset}
         className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100"
       >
-        Reset {phase == Phase.Work && "pomodoro"}{" "}
-        {phase == Phase.Rest && "rest"}
+        Reset {phase == phaseNames[PhaseKeys.Work] && "pomodoro"}{" "}
+        {phase == phaseNames[PhaseKeys.Rest] && "rest"}
       </div>
     </div>
   );

@@ -5,10 +5,23 @@ export interface IPomodoro {
   repeats: number;
 }
 
-export enum Phase {
-  Rest = "rest",
-  Work = "work",
+export interface IPhase {
+  name: string;
+  initialTime: number;
 }
+
+export type IPhaseNames = {
+  [key in PhaseKeys]: string;
+};
+
+export enum PhaseKeys {
+  Work = "work",
+  Rest = "rest",
+}
+
+export type IPhases = {
+  [key in PhaseKeys]: IPhase;
+};
 
 export enum Time {
   Rest = 5 * 60,

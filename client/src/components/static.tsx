@@ -1,4 +1,20 @@
-import { IPomodoro } from "../../types";
+import { IPhaseNames, IPhases, IPomodoro, PhaseKeys } from "../../types";
+
+export const phaseNames: IPhaseNames = {
+  [PhaseKeys.Work]: "work",
+  [PhaseKeys.Rest]: "rest",
+};
+
+export const phases: IPhases = {
+  [PhaseKeys.Work]: {
+    name: phaseNames[PhaseKeys.Work],
+    initialTime: 25 * 60,
+  },
+  [PhaseKeys.Rest]: {
+    name: phaseNames[PhaseKeys.Rest],
+    initialTime: 5 * 60,
+  },
+};
 
 export const staticPomodoros: IPomodoro[] = [
   {

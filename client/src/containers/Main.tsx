@@ -1,8 +1,8 @@
 import React, { FC, createContext, useEffect, useState } from "react";
 import Timer from "../components/Timer";
 import List from "../components/List";
-import { staticPomodoros } from "../components/static";
-import { IPomodoro, Phase, Time } from "../../types";
+import { phases, staticPomodoros } from "../components/static";
+import { IPhase, IPomodoro, PhaseKeys, Time } from "../../types";
 import Edit from "../components/Edit";
 import {
   addPomodoro,
@@ -29,10 +29,13 @@ export const LoggedInContext = createContext({
 const EditWithMemo = React.memo(Edit, (props, newProps) => false);
 
 const Main: FC<MainProps> = () => {
-  const [phase, setPhase] = useState<Phase>(Phase.Work);
-  const [initialTime, setInitialTime] = useState<Time>(Time.Work);
+  const [phase, setPhase] = useState<IPhase>(phases[PhaseKeys.Work]);
   const [edited, setEdited] = useState<IPomodoro | null>(null);
   const [pomodoros, setPomodoros] = useState<IPomodoro[]>([]);
+  /*
+  it may not be the worst idea to have a specific 'pomodoros' array that will indicate that
+  the pomodoros have not been loaded for the first time yet
+  */
   const [initialLoad, setInitialLoad] = useState(true);
   const [loggedIn, setLoggedIn] = useState(true);
 
@@ -53,13 +56,11 @@ const Main: FC<MainProps> = () => {
   }, [edited]);
 
   const changePhase = () => {
-    if (phase == Phase.Rest) {
-      setInitialTime(Time.Work);
-      setPhase(Phase.Work);
+    if (phase.name == "rest") {
+      setPhase(phases[PhaseKeys.Work]);
     }
-    if (phase == Phase.Work) {
-      setInitialTime(Time.Rest);
-      setPhase(Phase.Rest);
+    if (phase.name == "work") {
+      setPhase(phases[PhaseKeys.Rest]);
     }
   };
 
@@ -122,7 +123,7 @@ const Main: FC<MainProps> = () => {
   };
 
   const onTimeout = () => {
-    if (phase == Phase.Work) completeClosestPomodoro();
+    if (phase.name == "work") completeClosestPomodoro();
     changePhase();
   };
 
@@ -155,10 +156,10 @@ const Main: FC<MainProps> = () => {
     >
       <div className="flex h-screen flex-col md:flex-row">
         <Timer
-          key={"" + initialTime + phase}
-          initialTime={initialTime}
+          key={"" + phase.initialTime + phase}
+          initialTime={phase.initialTime}
           callback={onTimeout}
-          phase={phase}
+          phase={phase.name}
         />
         <div className="mb-10 md:mb-0" />
         <List
