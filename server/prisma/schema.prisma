@@ -16,6 +16,7 @@ model Pomodoro {
   description String
   repeats     Int
   order       Int    @default(0)
+  userid      String @default("")
 }
 
 model User {

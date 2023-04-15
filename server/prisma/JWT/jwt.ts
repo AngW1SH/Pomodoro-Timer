@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import Express from "express";
 
 export function generateAccessToken(username: string) {
@@ -13,13 +13,21 @@ export function generateRefreshToken(username: string) {
   });
 }
 
-export function getUsername(req: Express.Request, res: Express.Response) {
-  const username = jwt.verify(
+export function getUserId(token: string) {
+  const decoded = jwt.verify(token, process.env.TOKEN_SECRET!) as JwtPayload;
+  return decoded.username;
+}
+
+export function authorize(
+  req: Express.Request,
+  res: Express.Response,
+  next: Express.NextFunction
+) {
+  jwt.verify(
     req.signedCookies["pomonotes-access"],
     process.env.TOKEN_SECRET!,
     (err, decoded) => {
       if (err !== null) {
-        console.log(err);
         if (err.name == "TokenExpiredError") {
           jwt.verify(
             req.signedCookies["pomonotes-refresh"],
@@ -27,7 +35,7 @@ export function getUsername(req: Express.Request, res: Express.Response) {
             (err, decoded) => {
               if (err) {
                 if (err.name == "TokenExpiredError") {
-                  return "";
+                  res.status(401).send();
                 }
               } else {
                 res.cookie(
@@ -39,18 +47,16 @@ export function getUsername(req: Express.Request, res: Express.Response) {
                     signed: true,
                   }
                 );
-                return decoded.username;
+                next();
               }
             }
           );
         } else {
-          return "";
+          res.status(400).send();
         }
       } else {
-        return decoded.username;
+        next();
       }
     }
   );
-
-  return username;
 }

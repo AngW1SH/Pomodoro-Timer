@@ -5,13 +5,14 @@ import bcrypt, { hash } from "bcryptjs";
 import {
   generateAccessToken,
   generateRefreshToken,
-  getUsername,
+  authorize,
+  getUserId,
 } from "../prisma/JWT/jwt";
 var apiRouter = express.Router();
 
 //const prisma = new PrismaClient();
 
-apiRouter.post("/updateorder", async (req, res) => {
+apiRouter.post("/updateorder", authorize, async (req, res) => {
   if (!req.body.info) {
     res.status(400).send("Info not recieved");
   }
@@ -34,46 +35,78 @@ apiRouter.post("/updateorder", async (req, res) => {
   }
 });
 
-apiRouter.post("/add", async (req, res) => {
+apiRouter.post("/add", authorize, async (req, res) => {
   if (!req.body.pomodoro) {
     res.status(400).send("Pomodoro not recieved");
   }
   try {
-    const max = await prisma.pomodoro.aggregate({
-      _max: {
-        order: true,
-      },
-    });
-    const add = await prisma.pomodoro.create({
-      data: {
-        ...req.body.pomodoro,
-        order: max._max.order ? max._max.order + 1 : 0,
-      },
-    });
-    res.status(200).send(add);
+    const userId = getUserId(req.signedCookies["pomonotes-access"]);
+
+    if (userId.length) {
+      const max = await prisma.pomodoro.aggregate({
+        _max: {
+          order: true,
+        },
+      });
+      const add = await prisma.pomodoro.create({
+        data: {
+          ...req.body.pomodoro,
+          id: userId,
+          order: max._max.order ? max._max.order + 1 : 0,
+        },
+      });
+      res.status(200).send(add);
+    } else {
+      res.status(201).send();
+    }
   } catch (error) {
     res.status(500);
   }
 });
 
-apiRouter.post("/save", async (req, res) => {
+apiRouter.post("/save", authorize, async (req, res) => {
   if (!req.body.pomodoro) {
     res.status(400).send("Pomodoro not recieved");
   }
   try {
-    const add = await prisma.pomodoro.update({
-      where: {
-        id: req.body.pomodoro.id,
-      },
-      data: req.body.pomodoro,
-    });
-    res.status(200).send(add);
+    const userId = getUserId(req.signedCookies["pomonotes-access"]);
+
+    if (userId.length) {
+      const add = await prisma.pomodoro.updateMany({
+        where: {
+          id: req.body.pomodoro.id,
+          userid: userId,
+        },
+        data: req.body.pomodoro,
+      });
+      res.status(200).send(add);
+    } else {
+      res.status(201).send();
+    }
   } catch (error) {
     res.status(500);
   }
 });
 
 apiRouter.post("/delete", async (req, res) => {
+  if (!req.body.id) {
+    res.status(400).send("Id not recieved");
+  }
+  try {
+    const userId = getUserId(req.signedCookies["pomonotes-access"]);
+
+    if (userId.length) {
+      const deleted = await prisma.pomodoro.deleteMany({
+        where: {
+          id: req.body.id,
+          userid: userId,
+        },
+      });
+      res.status(200).send(deleted);
+    }
+  } catch (error) {
+    res.status(500);
+  }
   if (!req.body.id) {
     res.status(400).send("Id not recieved");
   }
@@ -89,17 +122,22 @@ apiRouter.post("/delete", async (req, res) => {
   }
 });
 
-apiRouter.get("/get", async (req, res) => {
+apiRouter.get("/get", authorize, async (req, res) => {
   try {
-    if (getUsername(req, res).length) {
+    const userId = getUserId(req.signedCookies["pomonotes-access"]);
+
+    if (userId.length) {
       const pomodoros = await prisma.pomodoro.findMany({
+        where: {
+          userid: userId,
+        },
         orderBy: {
           order: "asc",
         },
       });
       res.status(200).send(pomodoros);
     } else {
-      res.status(200).send([]);
+      res.status(201).send();
     }
   } catch (error) {
     res.status(500);
@@ -176,11 +214,15 @@ apiRouter.post("/login", async (req, res) => {
       doesUserExist!.password,
       function (err, result) {
         if (result) {
-          res.cookie("pomonotes-access", generateAccessToken(req.body.email), {
-            maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
-            httpOnly: true,
-            signed: true,
-          });
+          res.cookie(
+            "pomonotes-access",
+            generateAccessToken(doesUserExist.id),
+            {
+              maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
+              httpOnly: true,
+              signed: true,
+            }
+          );
 
           res.cookie(
             "pomonotes-refresh",
