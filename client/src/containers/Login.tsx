@@ -1,5 +1,6 @@
 import React, { FC, useState } from "react";
 import { loginUser, registerUser } from "../lib/login";
+import { redirect, useNavigate } from "react-router-dom";
 
 enum ActionTypes {
   Login = "login",
@@ -31,6 +32,8 @@ interface LoginProps {}
 
 const Login: FC<LoginProps> = () => {
   const [registering, setRegistering] = useState(false);
+
+  const navigateHome = useNavigate();
 
   const [formData, setFormData] = useState<IFormData>({
     login: {
@@ -138,6 +141,8 @@ const Login: FC<LoginProps> = () => {
         formData.register.email.value,
         formData.register.password.value
       );
+
+      if (result == 200) setRegistering(false);
     }
   };
 
@@ -155,6 +160,8 @@ const Login: FC<LoginProps> = () => {
         formData.login.email.value,
         formData.login.password.value
       );
+
+      if (result == 200) navigateHome("../");
     }
   };
 

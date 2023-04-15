@@ -29,3 +29,19 @@ export const loginUser = async (email: string, password: string) => {
 
   return result;
 };
+
+export const checkLoggedIn = async () => {
+  const result = await fetch("/api/islogged").then(
+    (response) => response.status
+  );
+
+  return result;
+};
+
+export const unauthorize = async () => {
+  const result = await fetch("/api/unauthorize").then(
+    (response) => response.status
+  );
+
+  return result;
+};

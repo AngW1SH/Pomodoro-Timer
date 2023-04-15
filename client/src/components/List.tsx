@@ -7,9 +7,16 @@ interface ListProps {
   setPomodoros: (pomodoros: IPomodoro[]) => any;
   onClick: (pomodoro: IPomodoro) => any;
   onAdd: () => any;
+  isLoading: boolean;
 }
 
-const List: FC<ListProps> = ({ pomodoros, setPomodoros, onClick, onAdd }) => {
+const List: FC<ListProps> = ({
+  pomodoros,
+  setPomodoros,
+  onClick,
+  onAdd,
+  isLoading,
+}) => {
   const dragInfo = useRef({
     isDragged: false,
     draggedIndex: -1,
@@ -122,47 +129,53 @@ const List: FC<ListProps> = ({ pomodoros, setPomodoros, onClick, onAdd }) => {
         onMouseUp={handleClick}
         className="h-full pb-10 md:pb-0"
       >
-        {pomodoros.map((pomodoro, index) => (
-          <div key={pomodoro.id} className="h-24">
-            <div
-              className={`${
-                pomodoro.repeats == 0
-                  ? "bg-gray-200"
-                  : "group bg-white hover:bg-gray-100"
-              } relative mb-8 flex h-16 cursor-pointer items-end justify-start overflow-hidden border border-black py-4 md:justify-center`}
-            >
-              <div
-                className="ml-4 mr-5 whitespace-nowrap text-xl font-bold"
-                dangerouslySetInnerHTML={{
-                  __html: pomodoro.title.replace(/(<([^>]+)>|&nbsp;)/gi, " "),
-                }}
-              ></div>
-              <div
-                className="mr-20 overflow-hidden whitespace-nowrap"
-                dangerouslySetInnerHTML={{
-                  __html: pomodoro.description.replace(
-                    /(<([^>]+)>|&nbsp;)/gi,
-                    " "
-                  ),
-                }}
-              ></div>
+        {!isLoading &&
+          pomodoros.map((pomodoro, index) => (
+            <div key={pomodoro.id} className="h-24">
               <div
                 className={`${
                   pomodoro.repeats == 0
                     ? "bg-gray-200"
-                    : "bg-white group-hover:bg-gray-100"
-                } absolute right-0 top-0 flex h-full w-14 items-center justify-center border-l border-black`}
+                    : "group bg-white hover:bg-gray-100"
+                } relative mb-8 flex h-16 cursor-pointer items-end justify-start overflow-hidden border border-black py-4 md:justify-center`}
               >
-                {pomodoro.repeats}
+                <div
+                  className="ml-4 mr-5 whitespace-nowrap text-xl font-bold"
+                  dangerouslySetInnerHTML={{
+                    __html: pomodoro.title.replace(/(<([^>]+)>|&nbsp;)/gi, " "),
+                  }}
+                ></div>
+                <div
+                  className="mr-20 overflow-hidden whitespace-nowrap"
+                  dangerouslySetInnerHTML={{
+                    __html: pomodoro.description.replace(
+                      /(<([^>]+)>|&nbsp;)/gi,
+                      " "
+                    ),
+                  }}
+                ></div>
+                <div
+                  className={`${
+                    pomodoro.repeats == 0
+                      ? "bg-gray-200"
+                      : "bg-white group-hover:bg-gray-100"
+                  } absolute right-0 top-0 flex h-full w-14 items-center justify-center border-l border-black`}
+                >
+                  {pomodoro.repeats}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
-      {!pomodoros.length && (
+      {!isLoading && !pomodoros.length && (
         <div className="pointer-events-none absolute left-0 top-0 -mt-10 flex h-full w-full items-center justify-center text-5xl font-light leading-snug text-gray-400">
           All done,
           <br /> good job!
+        </div>
+      )}
+      {isLoading && (
+        <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center">
+          <div className="b-4 b-gray-400 h-10 w-10"></div>
         </div>
       )}
       <div

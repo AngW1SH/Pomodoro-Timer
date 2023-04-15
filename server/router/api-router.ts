@@ -51,7 +51,7 @@ apiRouter.post("/add", authorize, async (req, res) => {
       const add = await prisma.pomodoro.create({
         data: {
           ...req.body.pomodoro,
-          id: userId,
+          userid: userId,
           order: max._max.order ? max._max.order + 1 : 0,
         },
       });
@@ -141,6 +141,28 @@ apiRouter.get("/get", authorize, async (req, res) => {
     }
   } catch (error) {
     res.status(500);
+  }
+});
+
+apiRouter.get("/islogged", authorize, async (req, res) => {
+  return res.status(200).send();
+});
+
+apiRouter.get("/unauthorize", async (req, res) => {
+  try {
+    res.cookie("pomonotes-access", null, {
+      maxAge: 0,
+      httpOnly: true,
+      signed: true,
+    });
+    res.cookie("pomonotes-refresh", null, {
+      maxAge: 0,
+      httpOnly: true,
+      signed: true,
+    });
+    res.status(200).send();
+  } catch (err) {
+    res.status(500).send();
   }
 });
 

@@ -46,7 +46,10 @@ export const deletePomodoro = async (id: number) => {
 };
 
 export const getPomodoros = async () => {
-  const result = await fetch("/api/get").then((data) => data.json());
+  const result = await fetch("/api/get").then((response) => {
+    if (response.status == 200) return response.json();
+    return [];
+  });
 
   return result;
 };
