@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 
 import path from "path";
 import apiRouter from "./router/api-router";
@@ -9,6 +10,7 @@ app.listen(3000, () => console.log("listening port 3000"));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser("secret"));
 app.use("/api", apiRouter);
 
 app.use("/public", express.static(path.resolve(__dirname + "/../public")));

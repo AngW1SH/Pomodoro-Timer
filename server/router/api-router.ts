@@ -2,6 +2,11 @@ import { PrismaClient } from "@prisma/client";
 import express from "express";
 import prisma from "../client";
 import bcrypt, { hash } from "bcryptjs";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  getUsername,
+} from "../prisma/JWT/jwt";
 var apiRouter = express.Router();
 
 //const prisma = new PrismaClient();
@@ -86,12 +91,16 @@ apiRouter.post("/delete", async (req, res) => {
 
 apiRouter.get("/get", async (req, res) => {
   try {
-    const pomodoros = await prisma.pomodoro.findMany({
-      orderBy: {
-        order: "asc",
-      },
-    });
-    res.status(200).send(pomodoros);
+    if (getUsername(req, res).length) {
+      const pomodoros = await prisma.pomodoro.findMany({
+        orderBy: {
+          order: "asc",
+        },
+      });
+      res.status(200).send(pomodoros);
+    } else {
+      res.status(200).send([]);
+    }
   } catch (error) {
     res.status(500);
   }
@@ -133,6 +142,17 @@ apiRouter.post("/register", async (req, res) => {
   }
 });
 
+apiRouter.get("/test", async (req, res) => {
+  try {
+    res.status(200).send({
+      access: req.signedCookies["pomonotes-access"],
+      refresh: req.signedCookies["pomonotes-refresh"],
+    });
+  } catch {
+    return res.status(400).send();
+  }
+});
+
 apiRouter.post("/login", async (req, res) => {
   try {
     if (!req.body.email || !req.body.password) {
@@ -156,6 +176,21 @@ apiRouter.post("/login", async (req, res) => {
       doesUserExist!.password,
       function (err, result) {
         if (result) {
+          res.cookie("pomonotes-access", generateAccessToken(req.body.email), {
+            maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
+            httpOnly: true,
+            signed: true,
+          });
+
+          res.cookie(
+            "pomonotes-refresh",
+            generateRefreshToken(req.body.email),
+            {
+              maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
+              httpOnly: true,
+              signed: true,
+            }
+          );
           res.status(200).send();
         } else {
           res.status(401).send();
