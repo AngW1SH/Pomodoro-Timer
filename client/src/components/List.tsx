@@ -4,7 +4,7 @@ import add from "../assets/add.svg";
 
 interface ListProps {
   pomodoros: IPomodoro[];
-  setPomodoros: (pomodoros: IPomodoro[]) => any;
+  setPomodoros: (pomodoros: IPomodoro[], serverUpdate: boolean) => any;
   onClick: (pomodoro: IPomodoro) => any;
   onAdd: () => any;
   isLoading: boolean;
@@ -25,6 +25,7 @@ const List: FC<ListProps> = ({
     width: -1,
   });
   const dragRef = useRef<HTMLElement | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const [draggedIndex, setDraggedIndex] = useState(-1);
 
@@ -46,7 +47,17 @@ const List: FC<ListProps> = ({
       });
     }
 
+    const positions = Array.from(listRef.current!.children).map(
+      (child, index) => {
+        return child.getBoundingClientRect().top;
+      }
+    );
+
     const handleDrag = (e: MouseEvent) => {
+      const newIndex = positions.findIndex((rectTop, index) => {
+        return dragInfo.current.y < rectTop;
+      });
+
       dragInfo.current = {
         isDragged: true,
         draggedIndex: dragInfo.current.draggedIndex,
@@ -63,6 +74,34 @@ const List: FC<ListProps> = ({
         dragRef.current.style.left = dragInfo.current.x + "px";
         dragRef.current.style.width = dragInfo.current.width + "px";
         dragRef.current.style.zIndex = "100";
+      }
+      if (listRef.current) {
+        if (newIndex == -1) {
+          setPomodoros(
+            [
+              ...pomodoros.filter(
+                (pomodoro, index) => index != dragInfo.current.draggedIndex
+              ),
+              pomodoros[dragInfo.current.draggedIndex],
+            ],
+            false
+          );
+        } else {
+          const newPomodoros = pomodoros.map((pomodoro, index) =>
+            index == dragInfo.current.draggedIndex
+              ? { ...pomodoro, id: -1 }
+              : pomodoro
+          );
+          newPomodoros.splice(
+            newIndex,
+            0,
+            pomodoros[dragInfo.current.draggedIndex]
+          );
+          setPomodoros(
+            newPomodoros.filter((pomodoro) => pomodoro.id != -1),
+            false
+          );
+        }
       }
     };
 
@@ -102,29 +141,14 @@ const List: FC<ListProps> = ({
         }
       );
 
-      if (index == -1) {
-        setPomodoros([
-          ...pomodoros.filter(
-            (pomodoro, indexMapped) =>
-              indexMapped != dragInfo.current.draggedIndex
-          ),
-          pomodoros[dragInfo.current.draggedIndex],
-        ]);
-      } else {
-        const newPomodoros = pomodoros.map((pomodoro, index) =>
-          index == dragInfo.current.draggedIndex
-            ? { ...pomodoro, id: -1 }
-            : pomodoro
-        );
-        newPomodoros.splice(index, 0, pomodoros[dragInfo.current.draggedIndex]);
-        setPomodoros(newPomodoros.filter((pomodoro) => pomodoro.id != -1));
-      }
+      setPomodoros(pomodoros, true);
     }
   };
 
   return (
     <div className="relative h-full w-full p-10 md:w-7/12 md:overflow-auto">
       <div
+        ref={listRef}
         onMouseDown={handleDragStart}
         onMouseUp={handleClick}
         className="h-full pb-10 md:pb-0"
@@ -137,6 +161,8 @@ const List: FC<ListProps> = ({
                   pomodoro.repeats == 0
                     ? "bg-gray-200"
                     : "group bg-white hover:bg-gray-100"
+                } ${
+                  dragInfo.current.draggedIndex ? "select-none" : ""
                 } relative mb-8 flex h-16 cursor-pointer items-end justify-start overflow-hidden border border-black py-4 md:justify-center`}
               >
                 <div

@@ -1,14 +1,17 @@
-import React, { FC, useContext, useState } from "react";
+import React, { FC, useContext, useEffect, useRef, useState } from "react";
 
 import settingsIcon from "../assets/settings.svg";
 import { Link } from "react-router-dom";
 import { LoggedInContext } from "../containers/Main";
 import { unauthorize } from "../lib/login";
+import { Transition } from "@headlessui/react";
 
 interface SettingsProps {}
 
 const Settings: FC<SettingsProps> = () => {
   const [opened, setOpened] = useState(false);
+
+  const ref = useRef<HTMLDivElement>(null);
 
   const handleToggleOpen = () => {
     setOpened(!opened);
@@ -23,11 +26,39 @@ const Settings: FC<SettingsProps> = () => {
       setOpened(false);
     }
   };
+  const handleClickAway = (e: MouseEvent) => {
+    if (
+      ref.current &&
+      e.target instanceof HTMLElement &&
+      ref.current == e.target // ref.current is the transparent background
+    ) {
+      setOpened(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickAway);
+
+    return () => {
+      document.removeEventListener("click", handleClickAway);
+    };
+  }, []);
 
   return (
     <React.Fragment>
-      {opened && (
-        <div className="fixed left-0 top-0 flex h-screen w-screen items-center justify-center">
+      <Transition
+        show={opened}
+        enter="transition-opacity duration-150"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition-opacity duration-150"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <div
+          ref={ref}
+          className="fixed left-0 top-0 flex h-screen w-screen items-center justify-center"
+        >
           <div className="h-3/4 w-1/2 max-w-xl rounded-md border border-black bg-white p-10">
             {!loggedIn && (
               <Link
@@ -47,7 +78,7 @@ const Settings: FC<SettingsProps> = () => {
             )}
           </div>
         </div>
-      )}
+      </Transition>
       <div className="fixed left-3 top-3 h-8 w-8" onClick={handleToggleOpen}>
         <img
           className="h-full w-full cursor-pointer object-cover"

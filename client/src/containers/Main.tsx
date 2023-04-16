@@ -117,9 +117,9 @@ const Main: FC<MainProps> = () => {
     }
   };
 
-  const swapPomodoros = (pomodoros: IPomodoro[]) => {
+  const swapPomodoros = (pomodoros: IPomodoro[], serverUpdate: boolean) => {
     setPomodoros(pomodoros);
-    updateOrder(pomodoros);
+    if (serverUpdate) updateOrder(pomodoros);
   };
 
   const onTimeout = () => {
