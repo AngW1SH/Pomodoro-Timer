@@ -10,7 +10,7 @@ import {
 } from "../prisma/JWT/jwt";
 var apiRouter = express.Router();
 
-//const prisma = new PrismaClient();
+//const prisma = new PrismaClient()
 
 apiRouter.post("/updateorder", authorize, async (req, res) => {
   if (!req.body.info) {
@@ -124,7 +124,9 @@ apiRouter.post("/delete", async (req, res) => {
 
 apiRouter.get("/get", authorize, async (req, res) => {
   try {
+    console.log("!");
     const userId = getUserId(req.signedCookies["pomonotes-access"]);
+    console.log(userId);
 
     if (userId.length) {
       const pomodoros = await prisma.pomodoro.findMany({

@@ -1,5 +1,34 @@
 import { IPomodoro } from "../../types";
 
+const authorizedFetch = async <Type>(
+  method: "GET" | "POST",
+  url: string,
+  body?: Type
+) => {
+  switch (method) {
+    case "GET": {
+      const result = await fetch(url);
+      if (result.status == 205) {
+        return await fetch(url);
+      }
+      return result;
+    }
+    case "POST": {
+      const result = await fetch(url);
+      if (result.status == 205)
+        return await fetch(url, {
+          method: "POST",
+          cache: "no-cache",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+      return result;
+    }
+  }
+};
+
 export const addPomodoro = async (pomodoro: IPomodoro) => {
   const result = await fetch("/api/add", {
     method: "POST",
@@ -10,7 +39,7 @@ export const addPomodoro = async (pomodoro: IPomodoro) => {
     body: JSON.stringify({
       pomodoro: pomodoro,
     }),
-  }).then((data) => data.json());
+  });
 
   return result;
 };
@@ -46,10 +75,9 @@ export const deletePomodoro = async (id: number) => {
 };
 
 export const getPomodoros = async () => {
-  const result = await fetch("/api/get").then((response) => {
-    if (response.status == 200) return response.json();
-    return [];
-  });
+  const result = await authorizedFetch("GET", "/api/get").then((response) =>
+    response.json()
+  );
 
   return result;
 };

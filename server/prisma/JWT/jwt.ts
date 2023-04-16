@@ -1,5 +1,6 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
 import Express from "express";
+import prisma from "../../client";
 
 export function generateAccessToken(username: string) {
   return jwt.sign({ username: username }, process.env.TOKEN_SECRET!, {
@@ -9,7 +10,7 @@ export function generateAccessToken(username: string) {
 
 export function generateRefreshToken(username: string) {
   return jwt.sign({ username: username }, process.env.TOKEN_SECRET!, {
-    expiresIn: 60 * 60 * 24,
+    expiresIn: 60 * 60 * 48,
   });
 }
 
@@ -32,22 +33,29 @@ export function authorize(
           jwt.verify(
             req.signedCookies["pomonotes-refresh"],
             process.env.TOKEN_SECRET!,
-            (err, decoded) => {
+            async (err, decoded) => {
               if (err) {
                 if (err.name == "TokenExpiredError") {
                   res.status(401).send();
                 }
               } else {
-                res.cookie(
-                  "pomonotes-access",
-                  generateAccessToken(decoded.username),
-                  {
+                const doesUserExist = await prisma.user.findFirst({
+                  where: {
+                    email: req.body.email,
+                  },
+                });
+                if (doesUserExist) {
+                  const newToken = generateAccessToken(doesUserExist.id);
+                  res.clearCookie("pomonotes-access");
+                  res.cookie("pomonotes-access", newToken, {
                     maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
                     httpOnly: true,
                     signed: true,
-                  }
-                );
-                next();
+                  });
+                  return res.status(205).send();
+                } else {
+                  return res.status(401).send();
+                }
               }
             }
           );
