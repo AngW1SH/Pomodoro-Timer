@@ -23,6 +23,7 @@ const List: FC<ListProps> = ({
     x: -1,
     y: -1,
     width: -1,
+    newIndex: -1,
   });
   const dragRef = useRef<HTMLElement | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -40,6 +41,7 @@ const List: FC<ListProps> = ({
             x: box.left,
             y: box.top,
             width: child.clientWidth,
+            newIndex: draggedIndex,
           };
 
           dragRef.current = child.children[0] as HTMLElement;
@@ -64,6 +66,7 @@ const List: FC<ListProps> = ({
         x: dragInfo.current.x + e.movementX,
         y: dragInfo.current.y + e.movementY,
         width: dragInfo.current.width,
+        newIndex: newIndex,
       };
 
       if (draggedIndex == -1) setDraggedIndex(dragInfo.current.draggedIndex);
@@ -112,6 +115,7 @@ const List: FC<ListProps> = ({
         x: -1,
         y: -1,
         width: -1,
+        newIndex: -1,
       };
 
       if (dragRef.current) dragRef.current.removeAttribute("style");
@@ -162,7 +166,7 @@ const List: FC<ListProps> = ({
                     ? "bg-gray-200"
                     : "group bg-white hover:bg-gray-100"
                 } ${
-                  dragInfo.current.draggedIndex ? "select-none" : ""
+                  dragInfo.current.draggedIndex != -1 ? "select-none" : ""
                 } relative mb-8 flex h-16 cursor-pointer items-end justify-start overflow-hidden border border-black py-4 md:justify-center`}
               >
                 <div
