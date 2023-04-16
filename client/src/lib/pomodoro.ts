@@ -1,36 +1,13 @@
 import { IPomodoro } from "../../types";
 
-const authorizedFetch = async <Type>(
-  method: "GET" | "POST",
-  url: string,
-  body?: Type
-) => {
-  switch (method) {
-    case "GET": {
-      const result = await fetch(url);
-      if (result.status == 205) {
-        return await fetch(url);
-      }
-      return result;
-    }
-    case "POST": {
-      const result = await fetch(url);
-      if (result.status == 205)
-        return await fetch(url, {
-          method: "POST",
-          cache: "no-cache",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-        });
-      return result;
-    }
-  }
+const authorizedFetch = async <Type>(url: RequestInfo, init?: RequestInit) => {
+  const result = await fetch(url, init);
+  if (result.status == 205) return await fetch(url, init);
+  return result;
 };
 
 export const addPomodoro = async (pomodoro: IPomodoro) => {
-  const result = await fetch("/api/add", {
+  const result = await authorizedFetch("/api/add", {
     method: "POST",
     cache: "no-cache",
     headers: {
@@ -39,13 +16,13 @@ export const addPomodoro = async (pomodoro: IPomodoro) => {
     body: JSON.stringify({
       pomodoro: pomodoro,
     }),
-  });
+  }).then((response) => response.status);
 
   return result;
 };
 
 export const savePomodoro = async (pomodoro: IPomodoro, order: number) => {
-  const result = await fetch("/api/save", {
+  const result = await authorizedFetch("/api/save", {
     method: "POST",
     cache: "no-cache",
     headers: {
@@ -54,13 +31,13 @@ export const savePomodoro = async (pomodoro: IPomodoro, order: number) => {
     body: JSON.stringify({
       pomodoro: { ...pomodoro, order: order },
     }),
-  }).then((data) => data.json());
+  }).then((response) => response.json());
 
   return result;
 };
 
 export const deletePomodoro = async (id: number) => {
-  const result = await fetch("/api/delete", {
+  const result = await authorizedFetch("/api/delete", {
     method: "POST",
     cache: "no-cache",
     headers: {
@@ -69,13 +46,13 @@ export const deletePomodoro = async (id: number) => {
     body: JSON.stringify({
       id: id,
     }),
-  }).then((data) => data.json());
+  }).then((response) => response.json());
 
   return result;
 };
 
 export const getPomodoros = async () => {
-  const result = await authorizedFetch("GET", "/api/get").then((response) =>
+  const result = await authorizedFetch("/api/get").then((response) =>
     response.json()
   );
 
