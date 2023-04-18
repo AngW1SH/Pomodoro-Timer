@@ -112,7 +112,7 @@ const Edit: FC<EditProps> = ({
     <div
       className={`fixed ${
         opened ? "right-0" : "sm:right[-75%] right-[-100%] md:right-[-40%]"
-      } top-0 flex h-screen w-full flex-col justify-start border-l bg-white pl-6 pr-6 pt-20 transition-[right] duration-300 sm:w-9/12 md:w-4/12 md:border-l-0 md:pt-10`}
+      } top-0 flex h-screen w-full flex-col justify-start border-l bg-white pl-6 pr-6 pt-20 transition-[right] duration-300 dark:bg-black dark:text-white sm:w-9/12 md:w-4/12 md:border-l-0 md:pt-10`}
     >
       <div
         className={`absolute right-3 top-14 h-3 w-3 rounded-full md:top-3 ${
@@ -124,7 +124,7 @@ const Edit: FC<EditProps> = ({
         onKeyDown={handleTitleKeydown}
         html={edited ? edited.title : ""}
         placeholder="Title"
-        className="relative mb-4 text-4xl outline-none before:hidden before:text-gray-600 empty:before:block empty:before:content-[attr(placeholder)]"
+        className="relative mb-4 text-4xl outline-none before:hidden before:text-gray-600 empty:before:block empty:before:content-[attr(placeholder)] dark:before:text-gray-400"
       />
       <ContentEditable
         innerRef={ref}
@@ -132,7 +132,7 @@ const Edit: FC<EditProps> = ({
         onKeyDown={handleDescriptionKeydown}
         html={edited ? edited.description : ""}
         placeholder="Description"
-        className="relative outline-none before:hidden before:text-gray-600 empty:before:block empty:before:content-[attr(placeholder)]"
+        className="relative outline-none before:hidden before:text-gray-600 empty:before:block empty:before:content-[attr(placeholder)] dark:before:text-gray-400"
       />
       <div className="mb-10 mt-auto flex flex-col text-center">
         <div className="mb-3 flex border border-gray-400">
@@ -144,7 +144,7 @@ const Edit: FC<EditProps> = ({
               onClick={onRepeatsDecrement}
               className="cursor-pointer select-none py-1 pl-2"
             >
-              <div className="box-border flex h-7 w-7 items-center justify-center rounded-md hover:bg-gray-100">
+              <div className="box-border flex h-7 w-7 items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
                 -
               </div>
             </div>
@@ -153,7 +153,7 @@ const Edit: FC<EditProps> = ({
               onClick={onRepeatsIncrement}
               className="cursor-pointer select-none py-1 pr-2"
             >
-              <div className="box-border flex h-7 w-7 items-center justify-center rounded-md hover:bg-gray-100">
+              <div className="box-border flex h-7 w-7 items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
                 +
               </div>
             </div>
@@ -161,13 +161,13 @@ const Edit: FC<EditProps> = ({
         </div>
         <div
           onClick={handleComplete}
-          className="mb-3 cursor-pointer border border-gray-400 px-10 py-2 hover:bg-gray-100"
+          className="mb-3 cursor-pointer border border-gray-400 px-10 py-2 hover:bg-gray-100 dark:border-white dark:bg-black dark:hover:bg-gray-700"
         >
           Mark as done
         </div>
       </div>
       <div
-        className="absolute left-0 top-0 flex h-10 w-full items-center justify-center border-x bg-gray-100 after:block after:h-px after:w-7 after:bg-gray-400 hover:bg-gray-200 md:-left-10 md:h-full md:w-10 md:bg-white md:hover:bg-gray-100"
+        className="absolute left-0 top-0 flex h-10 w-full items-center justify-center border-x bg-gray-100 after:block after:h-px after:w-7 after:bg-gray-400 hover:bg-gray-200 dark:bg-black dark:after:bg-white dark:hover:bg-gray-700 md:-left-10 md:h-full md:w-10 md:bg-white md:hover:bg-gray-100"
         onClick={handleClose}
       ></div>
     </div>

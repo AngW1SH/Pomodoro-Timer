@@ -1,4 +1,10 @@
-import React, { FC, createContext, useEffect, useState } from "react";
+import React, {
+  FC,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import Timer from "../components/Timer";
 import List from "../components/List";
 import { phases, staticPomodoros } from "../components/static";
@@ -13,6 +19,7 @@ import {
 } from "../lib/pomodoro";
 import Settings from "../components/Settings";
 import { checkLoggedIn } from "../lib/login";
+import { LoggedInContext } from "../App";
 
 interface MainProps {}
 
@@ -20,11 +27,6 @@ interface MainProps {}
 The purpose of only rendering the EditMenu once is to have the animations
 without adding too much unnecessary state
 */
-
-export const LoggedInContext = createContext({
-  loggedIn: true,
-  setLoggedIn: (value: boolean) => {},
-});
 
 const EditWithMemo = React.memo(Edit, (props, newProps) => false);
 
@@ -37,7 +39,7 @@ const Main: FC<MainProps> = () => {
   the pomodoros have not been loaded for the first time yet
   */
   const [initialLoad, setInitialLoad] = useState(true);
-  const [loggedIn, setLoggedIn] = useState(true);
+  const { loggedIn, setLoggedIn } = useContext(LoggedInContext);
 
   const [fetchesLeft, setFetchesLeft] = useState(0);
 
@@ -151,34 +153,30 @@ const Main: FC<MainProps> = () => {
   }, [loggedIn]);
 
   return (
-    <LoggedInContext.Provider
-      value={{ loggedIn: loggedIn, setLoggedIn: setLoggedIn }}
-    >
-      <div className="flex h-screen flex-col md:flex-row">
-        <Timer
-          key={"" + phase.initialTime + phase}
-          initialTime={phase.initialTime}
-          callback={onTimeout}
-          phase={phase.name}
-        />
-        <div className="mb-10 md:mb-0" />
-        <List
-          onClick={onPomodoroClick}
-          isLoading={initialLoad}
-          pomodoros={pomodoros}
-          setPomodoros={swapPomodoros}
-          onAdd={onAdd}
-        />
-        <EditWithMemo
-          edited={edited}
-          onComplete={onComplete}
-          onChange={setEdited}
-          onSave={onSave}
-          fetchesLeft={fetchesLeft}
-        />
-        <Settings />
-      </div>
-    </LoggedInContext.Provider>
+    <div className="flex h-screen flex-col dark:bg-black md:flex-row">
+      <Timer
+        key={"" + phase.initialTime + phase}
+        initialTime={phase.initialTime}
+        callback={onTimeout}
+        phase={phase.name}
+      />
+      <div className="mb-10 md:mb-0" />
+      <List
+        onClick={onPomodoroClick}
+        isLoading={initialLoad}
+        pomodoros={pomodoros}
+        setPomodoros={swapPomodoros}
+        onAdd={onAdd}
+      />
+      <EditWithMemo
+        edited={edited}
+        onComplete={onComplete}
+        onChange={setEdited}
+        onSave={onSave}
+        fetchesLeft={fetchesLeft}
+      />
+      <Settings />
+    </div>
   );
 };
 

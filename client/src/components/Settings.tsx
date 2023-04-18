@@ -2,7 +2,7 @@ import React, { FC, useContext, useEffect, useRef, useState } from "react";
 
 import settingsIcon from "../assets/settings.svg";
 import { Link } from "react-router-dom";
-import { LoggedInContext } from "../containers/Main";
+import { LoggedInContext, ThemeContext } from "../App";
 import { unauthorize } from "../lib/login";
 import { Transition } from "@headlessui/react";
 
@@ -44,6 +44,16 @@ const Settings: FC<SettingsProps> = () => {
     };
   }, []);
 
+  const { prevTheme, setTheme } = useContext(ThemeContext);
+
+  const handleToggleTheme = () => {
+    if (prevTheme == "dark") {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
+  };
+
   return (
     <React.Fragment>
       <Transition
@@ -59,11 +69,11 @@ const Settings: FC<SettingsProps> = () => {
           ref={ref}
           className="fixed left-0 top-0 flex h-screen w-screen items-center justify-center"
         >
-          <div className="h-3/4 w-1/2 max-w-xl rounded-md border border-black bg-white p-10">
+          <div className="h-3/4 w-1/2 max-w-xl rounded-md border border-black bg-white p-10 dark:border-white dark:bg-black dark:text-white">
             {!loggedIn && (
               <Link
                 to={"/login"}
-                className="mx-auto block w-3/4 cursor-pointer border border-black py-3 text-center"
+                className="mx-auto block w-3/4 cursor-pointer border border-black py-3 text-center dark:border-white dark:bg-black dark:text-white"
               >
                 Login
               </Link>
@@ -71,17 +81,23 @@ const Settings: FC<SettingsProps> = () => {
             {loggedIn && (
               <div
                 onClick={handleLogOut}
-                className="mx-auto w-3/4 cursor-pointer border border-black py-3 text-center"
+                className="mx-auto mb-6 w-3/4 cursor-pointer border border-black py-3 text-center dark:border-white dark:bg-black dark:text-white"
               >
                 Logout
               </div>
             )}
+            <div
+              onClick={handleToggleTheme}
+              className="mx-auto w-3/4 cursor-pointer border border-black py-3 text-center dark:border-white dark:bg-black dark:text-white"
+            >
+              Toggle Theme
+            </div>
           </div>
         </div>
       </Transition>
       <div className="fixed left-3 top-3 h-8 w-8" onClick={handleToggleOpen}>
         <img
-          className="h-full w-full cursor-pointer object-cover"
+          className="h-full w-full cursor-pointer object-cover dark:invert"
           src={settingsIcon}
           alt="settings"
         />

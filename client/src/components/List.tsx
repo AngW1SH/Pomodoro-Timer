@@ -163,11 +163,11 @@ const List: FC<ListProps> = ({
               <div
                 className={`${
                   pomodoro.repeats == 0
-                    ? "bg-gray-200"
-                    : "group bg-white hover:bg-gray-100"
+                    ? "bg-gray-200 dark:bg-gray-800"
+                    : "group bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-700"
                 } ${
                   dragInfo.current.draggedIndex != -1 ? "select-none" : ""
-                } relative mb-8 flex h-16 cursor-pointer items-end justify-start overflow-hidden border border-black py-4 md:justify-center`}
+                } relative mb-8 flex h-16 cursor-pointer items-end justify-start overflow-hidden border border-black py-4 dark:border-white dark:bg-black dark:text-white md:justify-center`}
               >
                 <div
                   className="ml-4 mr-5 whitespace-nowrap text-xl font-bold"
@@ -187,9 +187,9 @@ const List: FC<ListProps> = ({
                 <div
                   className={`${
                     pomodoro.repeats == 0
-                      ? "bg-gray-200"
-                      : "bg-white group-hover:bg-gray-100"
-                  } absolute right-0 top-0 flex h-full w-14 items-center justify-center border-l border-black`}
+                      ? "bg-gray-200 dark:bg-gray-800"
+                      : "bg-white group-hover:bg-gray-100 dark:bg-black dark:group-hover:bg-gray-700"
+                  } absolute right-0 top-0 flex h-full w-14 items-center justify-center border-l border-black dark:border-white`}
                 >
                   {pomodoro.repeats}
                 </div>
@@ -210,7 +210,7 @@ const List: FC<ListProps> = ({
       )}
       <div
         onClick={onAdd}
-        className="absolute bottom-0 left-0 flex h-16 w-full cursor-pointer items-center justify-center bg-gray-100 hover:bg-gray-200"
+        className="absolute bottom-0 left-0 flex h-16 w-full cursor-pointer items-center justify-center bg-gray-100 hover:bg-gray-200 dark:border-t dark:border-t-white dark:bg-gray-800 dark:hover:bg-gray-700"
       >
         <img src={add} alt="add a pomodoro" />
       </div>

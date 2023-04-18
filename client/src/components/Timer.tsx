@@ -70,29 +70,29 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
   }, []);
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center border-b border-black pb-12 md:w-5/12 md:border-b-0 md:border-r md:pb-0">
+    <div className="flex h-full w-full flex-col items-center justify-center border-b border-black pb-12 dark:border-white md:w-5/12 md:border-b-0 md:border-r md:pb-0">
       <div className="mb-12 mt-12 text-5xl md:-mt-6">
         {phase == phaseNames[PhaseKeys.Work] ? "Focus" : "Rest"}
       </div>
-      <div className="mb-16 font-mono text-8xl tracking-wide xs:text-9xl md:text-8xl lg:text-9xl">
+      <div className="lg:text-9x mb-16 font-mono text-8xl tracking-wide dark:text-white xs:text-9xl md:text-8xl">
         {time >= 0 ? formatTime(time) : "00:00"}
       </div>
       <div
         onClick={handleStop}
-        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100"
+        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100 dark:border-white dark:text-white dark:hover:bg-gray-900"
       >
         {stopped ? "Start Timer" : "Stop Timer"}
       </div>
       <div
         onClick={handleSkip}
-        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100"
+        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100 dark:border-white dark:text-white dark:hover:bg-gray-900"
       >
         Skip {phase == phaseNames[PhaseKeys.Work] && "pomodoro"}{" "}
         {phase == phaseNames[PhaseKeys.Rest] && "rest"}
       </div>
       <div
         onClick={handleReset}
-        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100"
+        className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100 dark:border-white dark:text-white dark:hover:bg-gray-900"
       >
         Reset {phase == phaseNames[PhaseKeys.Work] && "pomodoro"}{" "}
         {phase == phaseNames[PhaseKeys.Rest] && "rest"}
