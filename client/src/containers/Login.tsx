@@ -1,6 +1,7 @@
-import React, { FC, useState } from "react";
+import React, { FC, useContext, useEffect, useState } from "react";
 import { loginUser, registerUser } from "../lib/login";
 import { redirect, useNavigate } from "react-router-dom";
+import { LoggedInContext } from "../App";
 
 enum ActionTypes {
   Login = "login",
@@ -34,6 +35,8 @@ const Login: FC<LoginProps> = () => {
   const [registering, setRegistering] = useState(false);
 
   const navigateHome = useNavigate();
+
+  const {loggedIn, setLoggedIn} = useContext(LoggedInContext);
 
   const [formData, setFormData] = useState<IFormData>({
     login: {
@@ -161,9 +164,16 @@ const Login: FC<LoginProps> = () => {
         formData.login.password.value
       );
 
-      if (result == 200) navigateHome("../");
+      if (result == 200) {
+        setLoggedIn(true);
+        navigateHome("../");
+      }
     }
   };
+
+  useEffect(() => {
+    if (loggedIn) navigateHome("../");
+  }, [loggedIn]);
 
   return (
     <div className="flex h-screen w-screen items-center justify-center">

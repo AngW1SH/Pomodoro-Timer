@@ -1,6 +1,7 @@
-import React, { FC, useRef, useState } from "react";
+import React, { FC, useContext, useRef, useState } from "react";
 import { IPomodoro } from "../../types";
 import add from "../assets/add.svg";
+import { LoggedInContext } from "../App";
 
 interface ListProps {
   pomodoros: IPomodoro[];
@@ -29,6 +30,8 @@ const List: FC<ListProps> = ({
   const listRef = useRef<HTMLDivElement>(null);
 
   const [draggedIndex, setDraggedIndex] = useState(-1);
+
+  const { loggedIn } = useContext(LoggedInContext);
 
   const handleDragStart = (e: React.MouseEvent) => {
     if (e.target instanceof HTMLElement) {
@@ -92,7 +95,7 @@ const List: FC<ListProps> = ({
         } else {
           const newPomodoros = pomodoros.map((pomodoro, index) =>
             index == dragInfo.current.draggedIndex
-              ? { ...pomodoro, id: -1 }
+              ? { ...pomodoro, id: "-1" }
               : pomodoro
           );
           newPomodoros.splice(
@@ -101,7 +104,7 @@ const List: FC<ListProps> = ({
             pomodoros[dragInfo.current.draggedIndex]
           );
           setPomodoros(
-            newPomodoros.filter((pomodoro) => pomodoro.id != -1),
+            newPomodoros.filter((pomodoro) => pomodoro.id != "-1"),
             false
           );
         }
@@ -157,7 +160,7 @@ const List: FC<ListProps> = ({
         onMouseUp={handleClick}
         className="h-full pb-10 md:pb-0"
       >
-        {!isLoading &&
+        {(!isLoading || !loggedIn) &&
           pomodoros.map((pomodoro, index) => (
             <div key={pomodoro.id} className="h-24">
               <div

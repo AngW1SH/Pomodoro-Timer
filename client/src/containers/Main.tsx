@@ -89,22 +89,22 @@ const Main: FC<MainProps> = () => {
     }
   };
 
-  const onComplete = (id: number) => {
+  const onComplete = (id: string) => {
     deletePomodoro(id);
     setPomodoros(pomodoros.filter((pomodoro) => pomodoro.id != id));
   };
 
-  const onAdd = () => {
-    const newId =
-      pomodoros.reduce(
-        (maxId, pomodoro) => (maxId < pomodoro.id ? pomodoro.id : maxId),
-        0
-      ) + 1;
-    const newPomodoro = { id: newId, title: "", description: "", repeats: 1 };
-    setPomodoros([...pomodoros, newPomodoro]);
-    setEdited(newPomodoro);
-    addPomodoro(newPomodoro);
+  const onAdd = async () => {
+    const newPomodoro = {
+      id: "-1",
+      title: "",
+      description: "",
+      repeats: 1,
+    };
+    const result = await addPomodoro(newPomodoro);
+    setPomodoros((pomodoros) => [...pomodoros, result]);
     updateOrder(pomodoros);
+    setEdited(result);
   };
 
   const onSave = (pomodoro: IPomodoro) => {

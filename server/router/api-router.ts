@@ -51,6 +51,7 @@ apiRouter.post("/add", authorize, async (req, res) => {
       const add = await prisma.pomodoro.create({
         data: {
           ...req.body.pomodoro,
+          id: undefined,
           userid: userId,
           order: max._max.order ? max._max.order + 1 : 0,
         },

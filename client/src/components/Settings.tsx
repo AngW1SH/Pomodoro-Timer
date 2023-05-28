@@ -69,11 +69,11 @@ const Settings: FC<SettingsProps> = () => {
           ref={ref}
           className="fixed left-0 top-0 flex h-screen w-screen items-center justify-center"
         >
-          <div className="h-3/4 w-1/2 max-w-xl rounded-md border border-black bg-white p-10 dark:border-white dark:bg-black dark:text-white">
+          <div className="h-3/4 w-11/12 max-w-xl rounded-md border border-black bg-white p-10 dark:border-white dark:bg-black dark:text-white md:w-1/2">
             {!loggedIn && (
               <Link
                 to={"/login"}
-                className="mx-auto block w-3/4 cursor-pointer border border-black py-3 text-center dark:border-white dark:bg-black dark:text-white"
+                className="mx-auto mb-6 block cursor-pointer border border-black py-3 text-center dark:border-white dark:bg-black dark:text-white md:w-3/4"
               >
                 Login
               </Link>
@@ -81,14 +81,14 @@ const Settings: FC<SettingsProps> = () => {
             {loggedIn && (
               <div
                 onClick={handleLogOut}
-                className="mx-auto mb-6 w-3/4 cursor-pointer border border-black py-3 text-center dark:border-white dark:bg-black dark:text-white"
+                className="mx-auto mb-6 cursor-pointer border border-black py-3 text-center dark:border-white dark:bg-black dark:text-white md:w-3/4"
               >
                 Logout
               </div>
             )}
             <div
               onClick={handleToggleTheme}
-              className="mx-auto w-3/4 cursor-pointer border border-black py-3 text-center dark:border-white dark:bg-black dark:text-white"
+              className="mx-auto cursor-pointer border border-black py-3 text-center dark:border-white dark:bg-black dark:text-white md:w-3/4"
             >
               Toggle Theme
             </div>

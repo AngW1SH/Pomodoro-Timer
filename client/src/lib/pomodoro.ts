@@ -6,7 +6,7 @@ const authorizedFetch = async <Type>(url: RequestInfo, init?: RequestInit) => {
   return result;
 };
 
-export const addPomodoro = async (pomodoro: IPomodoro) => {
+export const addPomodoro = async (pomodoro: IPomodoro): Promise<IPomodoro> => {
   const result = await authorizedFetch("/api/add", {
     method: "POST",
     cache: "no-cache",
@@ -16,7 +16,7 @@ export const addPomodoro = async (pomodoro: IPomodoro) => {
     body: JSON.stringify({
       pomodoro: pomodoro,
     }),
-  }).then((response) => response.status);
+  }).then((response) => response.json());
 
   return result;
 };
@@ -36,7 +36,7 @@ export const savePomodoro = async (pomodoro: IPomodoro, order: number) => {
   return result;
 };
 
-export const deletePomodoro = async (id: number) => {
+export const deletePomodoro = async (id: string) => {
   const result = await authorizedFetch("/api/delete", {
     method: "POST",
     cache: "no-cache",

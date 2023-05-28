@@ -1,5 +1,5 @@
 export interface IPomodoro {
-  id: number;
+  id: string;
   title: string;
   description: string;
   repeats: number;

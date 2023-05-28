@@ -6,7 +6,7 @@ import { useDebounce } from "../hooks/useDebounce";
 interface EditProps {
   edited: IPomodoro | null;
   onChange: (edited: IPomodoro) => any;
-  onComplete: (id: number) => any;
+  onComplete: (id: string) => any;
   onSave: (pomodoro: IPomodoro) => any;
   fetchesLeft: number;
 }
