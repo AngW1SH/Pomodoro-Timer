@@ -1,7 +1,8 @@
-import React, { FC, useEffect, useRef, useState } from "react";
+import React, { FC, useContext, useEffect, useRef, useState } from "react";
 import { EditAction, EditActionKind, IPomodoro } from "../../types";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useDebounce } from "../hooks/useDebounce";
+import { LoggedInContext } from "../App";
 
 interface EditProps {
   edited: IPomodoro | null;
@@ -21,6 +22,8 @@ const Edit: FC<EditProps> = ({
   const [opened, setOpened] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const [synced, setSynced] = useState(true);
+
+  const { loggedIn } = useContext(LoggedInContext);
 
   const handleClose = () => {
     setOpened(false);
@@ -114,11 +117,13 @@ const Edit: FC<EditProps> = ({
         opened ? "right-0" : "sm:right[-75%] right-[-100%] md:right-[-40%]"
       } top-0 flex h-screen w-full flex-col justify-start border-l bg-white pl-6 pr-6 pt-20 transition-[right] duration-300 dark:bg-black dark:text-white sm:w-9/12 md:w-4/12 md:border-l-0 md:pt-10`}
     >
-      <div
-        className={`absolute right-3 top-14 h-3 w-3 rounded-full md:top-3 ${
-          synced ? "bg-green-300" : "bg-yellow-300"
-        }`}
-      />
+      {loggedIn && (
+        <div
+          className={`absolute right-3 top-14 h-3 w-3 rounded-full md:top-3 ${
+            synced ? "bg-green-300" : "bg-yellow-300"
+          }`}
+        />
+      )}
       <ContentEditable
         onChange={onTitleChange}
         onKeyDown={handleTitleKeydown}
