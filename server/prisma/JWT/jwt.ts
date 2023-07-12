@@ -60,7 +60,7 @@ export function authorize(
             }
           );
         } else {
-          res.status(400).send();
+          res.status(201).send();
         }
       } else {
         next();

@@ -84,13 +84,14 @@ const Main: FC<MainProps> = () => {
           ...pomodoros[completedIndex],
           repeats: pomodoros[completedIndex].repeats - 1,
         },
-        completedIndex
+        completedIndex,
+        loggedIn
       );
     }
   };
 
   const onComplete = (id: string) => {
-    deletePomodoro(id);
+    deletePomodoro(id, loggedIn);
     setPomodoros(pomodoros.filter((pomodoro) => pomodoro.id != id));
   };
 
@@ -101,10 +102,24 @@ const Main: FC<MainProps> = () => {
       description: "",
       repeats: 1,
     };
-    const result = await addPomodoro(newPomodoro);
-    setPomodoros((pomodoros) => [...pomodoros, result]);
-    updateOrder(pomodoros);
-    setEdited(result);
+
+    const result = await addPomodoro(newPomodoro, loggedIn);
+
+    if (result.id == "-1") {
+      const newId = pomodoros.reduce(
+        (acc, cur) => (acc > +cur.id ? +cur.id : acc),
+        0
+      );
+      setPomodoros((pomodoros) => [
+        ...pomodoros,
+        { ...result, id: "" + (newId - 1) },
+      ]);
+      setEdited({ ...result, id: "" + (newId - 1) });
+    } else {
+      setPomodoros((pomodoros) => [...pomodoros, result]);
+      setEdited(result);
+    }
+    updateOrder(pomodoros, loggedIn);
   };
 
   const onSave = (pomodoro: IPomodoro) => {
@@ -113,7 +128,7 @@ const Main: FC<MainProps> = () => {
       (pomMapped) => pomMapped.id == pomodoro.id
     );
     if (order != -1) {
-      savePomodoro(pomodoro, order).then((result) =>
+      savePomodoro(pomodoro, order, loggedIn).then((result) =>
         setFetchesLeft((fetchesLeftPrev) => fetchesLeftPrev - 1)
       );
     }
@@ -121,7 +136,7 @@ const Main: FC<MainProps> = () => {
 
   const swapPomodoros = (pomodoros: IPomodoro[], serverUpdate: boolean) => {
     setPomodoros(pomodoros);
-    if (serverUpdate) updateOrder(pomodoros);
+    if (serverUpdate) updateOrder(pomodoros, loggedIn);
   };
 
   const onTimeout = () => {
@@ -138,7 +153,7 @@ const Main: FC<MainProps> = () => {
   };
 
   const fetchPomodoros = async () => {
-    const pomodorosFromServer = await getPomodoros();
+    const pomodorosFromServer = await getPomodoros(loggedIn);
     setPomodoros(pomodorosFromServer);
     setInitialLoad(false);
   };

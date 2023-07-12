@@ -9,6 +9,10 @@ interface TimerProps {
 }
 
 const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
+  const [checkpoint, setCheckpoint] = useState({
+    timeLeft: initialTime,
+    resumeTime: new Date(),
+  });
   const [time, setTime] = useState(initialTime);
   const [stopped, setStopped] = useState(true);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -31,7 +35,15 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
       if (timer.current) clearInterval(timer.current);
       callback();
     } else {
-      setTime((time) => time - 1);
+      setTime(() => {
+        console.log(checkpoint.resumeTime);
+        console.log(new Date());
+        return Math.round(
+          checkpoint.timeLeft -
+            Math.round(new Date().getTime() - checkpoint.resumeTime.getTime()) /
+              1000
+        );
+      });
     }
   };
 
@@ -39,6 +51,10 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
     if (!stopped) {
       if (timer.current) clearInterval(timer.current);
     } else {
+      setCheckpoint({
+        timeLeft: time,
+        resumeTime: new Date(),
+      });
       launchTimer(time - 1); // I found immediate timer resume to be more intuitive
     }
     setStopped(!stopped);
@@ -52,6 +68,10 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
     if (timer.current) clearInterval(timer.current);
     setTime(initialTime);
     setStopped(true);
+    setCheckpoint({
+      timeLeft: initialTime,
+      resumeTime: new Date(),
+    });
   };
 
   const launchTimer = (initialTime: number) => {
@@ -74,7 +94,10 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
       <div className="mb-12 mt-12 text-5xl md:-mt-6">
         {phase == phaseNames[PhaseKeys.Work] ? "Focus" : "Rest"}
       </div>
-      <div className="lg:text-9x mb-16 font-mono text-8xl tracking-wide dark:text-white xs:text-9xl md:text-8xl">
+      <div
+        className="lg:text-9x mb-16 font-mono text-8xl tracking-wide dark:text-white xs:text-9xl md:text-8xl"
+        key={time}
+      >
         {time >= 0 ? formatTime(time) : "00:00"}
       </div>
       <div
