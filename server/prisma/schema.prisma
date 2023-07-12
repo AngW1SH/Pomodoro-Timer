@@ -20,7 +20,15 @@ model Pomodoro {
 }
 
 model User {
-  id       String @id @default(uuid())
+  id       String  @id @default(uuid())
   email    String
   password String
+  active   Boolean @default(false)
+}
+
+model UserEmailConfirm {
+  id           String   @id @default(uuid())
+  token        String
+  userid       String   @default("")
+  creationtime DateTime @default(now())
 }

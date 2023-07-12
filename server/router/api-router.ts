@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import prisma from "../client";
+import crypto from "node:crypto";
+import nodemailer from "nodemailer";
 import bcrypt, { hash } from "bcryptjs";
 import {
   generateAccessToken,
@@ -149,6 +151,26 @@ apiRouter.get("/islogged", authorize, async (req, res) => {
   return res.status(200).send();
 });
 
+apiRouter.get("/confirmemail/:token", async (req, res) => {
+  const userid_token = await prisma.userEmailConfirm.findFirst({
+    where: {
+      token: req.params.token,
+    },
+  });
+
+  if (userid_token && userid_token.userid) {
+    const user = await prisma.user.update({
+      where: {
+        id: userid_token.userid,
+      },
+      data: {
+        active: true,
+      },
+    });
+  }
+  return res.status(200).send();
+});
+
 apiRouter.get("/unauthorize", async (req, res) => {
   try {
     res.cookie("pomonotes-access", null, {
@@ -166,6 +188,31 @@ apiRouter.get("/unauthorize", async (req, res) => {
     res.status(500).send();
   }
 });
+
+const sendConfirmationEmail = async (email: string, token: string) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "yandex",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
+
+    const info = await transporter.sendMail({
+      from: process.env.MAIL_USER + "@yandex.ru",
+      to: email,
+      subject: "Pomodoro | Email Confirmation",
+      text: "http://localhost:5173/api/confirmemail/" + token,
+    });
+
+    return info;
+  } catch (err) {
+    return err;
+  }
+};
 
 apiRouter.post("/register", async (req, res) => {
   try {
@@ -189,6 +236,14 @@ apiRouter.post("/register", async (req, res) => {
               password: hashedPassword,
             },
           });
+          const token = crypto.randomBytes(128).toString("hex");
+          const resultEmail = await prisma.userEmailConfirm.create({
+            data: {
+              token: token,
+              userid: result.id,
+            },
+          });
+          console.log(await sendConfirmationEmail(result.email, token));
           res.status(200).send();
           return;
         });
