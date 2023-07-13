@@ -36,7 +36,7 @@ const Login: FC<LoginProps> = () => {
 
   const navigateHome = useNavigate();
 
-  const {loggedIn, setLoggedIn} = useContext(LoggedInContext);
+  const { loggedIn, setLoggedIn } = useContext(LoggedInContext);
 
   const [formData, setFormData] = useState<IFormData>({
     login: {
@@ -285,15 +285,21 @@ const Login: FC<LoginProps> = () => {
             />
             <div
               onClick={handleLogin}
-              className="mx-auto mt-10 w-max cursor-pointer border border-black px-4 py-1"
+              className="mx-auto mt-5 w-max cursor-pointer border border-black px-4 py-1"
             >
               Submit
             </div>
             <div
               onClick={handleStartRegistering}
-              className="absolute bottom-3 left-3 cursor-pointer text-sm font-light"
+              className="mx-auto w-max cursor-pointer pt-6 text-sm font-light"
             >
-              I'm new here
+              New here?
+            </div>
+            <div
+              onClick={handleStartRegistering}
+              className="mx-auto mt-1 w-max cursor-pointer border border-black px-10 py-1"
+            >
+              Register
             </div>
           </>
         )}
