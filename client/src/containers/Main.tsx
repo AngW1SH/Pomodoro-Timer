@@ -11,25 +11,13 @@ import { logout } from "../redux/misc";
 
 interface MainProps {}
 
-/* 
-The purpose of only rendering the EditMenu once is to have the animations
-without adding too much unnecessary state
-*/
-
-const EditWithMemo = React.memo(Edit, (props, newProps) => false);
-
 const Main: FC<MainProps> = () => {
   const pomodoros = useAppSelector((state) => state.pomodoros.pomodoros);
   const phase = useAppSelector((state) => state.timer.phase);
-
-  const dispatch = useAppDispatch();
-  /*
-  it may not be the worst idea to have a specific 'pomodoros' array that will indicate that
-  the pomodoros have not been loaded for the first time yet
-  */
-  const [initialLoad, setInitialLoad] = useState(true);
-
   const loggedIn = useAppSelector((state) => state.misc.loggedIn);
+  const dispatch = useAppDispatch();
+
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const updateLoggedIn = async () => {
     const result = await checkLoggedIn();
@@ -85,7 +73,7 @@ const Main: FC<MainProps> = () => {
       <Timer />
       <div className="mb-10 md:mb-0" />
       <List isLoading={initialLoad} />
-      <EditWithMemo />
+      <Edit />
       <Settings />
     </div>
   );

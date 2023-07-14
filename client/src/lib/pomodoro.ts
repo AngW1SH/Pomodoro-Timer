@@ -38,10 +38,12 @@ export const addPomodoro = async (
 export const savePomodoro = async (
   pomodoro: IPomodoro,
   order: number,
-  loggedIn: boolean
+  loggedIn: boolean,
+  controller?: AbortController
 ) => {
   if (loggedIn) {
     const result = await authorizedFetch("/api/save", {
+      signal: controller ? controller.signal : null,
       method: "POST",
       cache: "no-cache",
       headers: {
@@ -50,7 +52,9 @@ export const savePomodoro = async (
       body: JSON.stringify({
         pomodoro: { ...pomodoro, order: order },
       }),
-    }).then((response) => response.json());
+    })
+      .then((response) => response.json())
+      .catch(() => {});
 
     return result;
   }

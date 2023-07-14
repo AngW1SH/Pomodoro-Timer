@@ -30,6 +30,8 @@ const Edit: FC<EditProps> = () => {
 
   const loggedIn = useAppSelector((state) => state.misc.loggedIn);
 
+  const controller = useRef(new AbortController());
+
   const handleClose = () => {
     dispatch(hideEdited());
   };
@@ -74,6 +76,13 @@ const Edit: FC<EditProps> = () => {
     if (e.key == "Enter") e.preventDefault();
   };
 
+  /*
+  Used to make new lines with <br> instead of a new <div>
+  but it turned out to be pretty buggy (sometimes, the
+  range would jump back to its previous position after
+  half a second of being in a new one)
+  And on top of that, creating new divs isn't exactly an issue,
+  so i decided to leave it be for now */
   const handleDescriptionKeydown = (e: React.KeyboardEvent) => {
     if (e.key == "Enter" && e.shiftKey == false && ref.current) {
       e.preventDefault();
@@ -91,6 +100,12 @@ const Edit: FC<EditProps> = () => {
         if (endOfLine) {
           ref.current.appendChild(document.createElement("br"));
         }
+        dispatch(
+          setEdited({
+            ...edited!,
+            description: (e.target as HTMLDivElement).innerHTML,
+          })
+        ); // for debouncedEdited
       }
     }
   };
@@ -103,30 +118,23 @@ const Edit: FC<EditProps> = () => {
     }
   }, [debouncedEdited]);
 
-  useEffect(() => {
-    /*
-    Potential Problems:
-     - make sure a new object is always passed
-       the editor won't open back if the same pomodoro is passed
-    */
-
-    if (edited) dispatch(showEdited());
-  }, [edited]);
-
   const onSave = (pomodoro: IPomodoro) => {
     dispatch(addFetch());
     const order = pomodoros.findIndex(
       (pomMapped) => pomMapped.id == pomodoro.id
     );
     if (order != -1) {
-      savePomodoro(pomodoro, order, loggedIn).then((result) =>
-        dispatch(removeFetch())
+      controller.current.abort();
+      controller.current = new AbortController();
+      savePomodoro(pomodoro, order, loggedIn, controller.current).then(
+        (result) => dispatch(removeFetch())
       );
     }
   };
 
   useEffect(() => {
     if (edited) {
+      if (!opened) dispatch(showEdited());
       dispatch(
         updatePomodoros(
           pomodoros.map((pomodoro) =>
