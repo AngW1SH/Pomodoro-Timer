@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./containers/Login";
 import Main from "./containers/Main";
 import useTheme from "./hooks/useTheme";
+import { Provider } from "react-redux";
+import store from "./redux/store";
 
 interface AppProps {}
 
@@ -21,16 +23,18 @@ const App: FC<AppProps> = () => {
   const [loggedIn, setLoggedIn] = useState(true);
 
   return (
-    <ThemeContext.Provider value={{ prevTheme, setTheme }}>
-      <LoggedInContext.Provider value={{ loggedIn, setLoggedIn }}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Main />} />
-          </Routes>
-        </BrowserRouter>
-      </LoggedInContext.Provider>
-    </ThemeContext.Provider>
+    <Provider store={store}>
+      <ThemeContext.Provider value={{ prevTheme, setTheme }}>
+        <LoggedInContext.Provider value={{ loggedIn, setLoggedIn }}>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<Main />} />
+            </Routes>
+          </BrowserRouter>
+        </LoggedInContext.Provider>
+      </ThemeContext.Provider>
+    </Provider>
   );
 };
 

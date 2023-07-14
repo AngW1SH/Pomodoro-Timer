@@ -1,10 +1,11 @@
-import React, { FC, useContext, useEffect, useRef, useState } from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
 
 import settingsIcon from "../assets/settings.svg";
 import { Link } from "react-router-dom";
-import { LoggedInContext, ThemeContext } from "../App";
 import { unauthorize } from "../lib/login";
 import { Transition } from "@headlessui/react";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { logout, toggleTheme } from "../redux/misc";
 
 interface SettingsProps {}
 
@@ -13,16 +14,20 @@ const Settings: FC<SettingsProps> = () => {
 
   const ref = useRef<HTMLDivElement>(null);
 
+  const theme = useAppSelector((state) => state.misc.theme);
+
+  const dispatch = useAppDispatch();
+
   const handleToggleOpen = () => {
     setOpened(!opened);
   };
 
-  const { loggedIn, setLoggedIn } = useContext(LoggedInContext);
+  const loggedIn = useAppSelector((state) => state.misc.loggedIn);
 
   const handleLogOut = async () => {
     const result = await unauthorize();
     if (result == 200) {
-      setLoggedIn(false);
+      dispatch(logout());
       setOpened(false);
     }
   };
@@ -44,15 +49,16 @@ const Settings: FC<SettingsProps> = () => {
     };
   }, []);
 
-  const { prevTheme, setTheme } = useContext(ThemeContext);
-
   const handleToggleTheme = () => {
-    if (prevTheme == "dark") {
-      setTheme("dark");
-    } else {
-      setTheme("light");
-    }
+    dispatch(toggleTheme());
   };
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove(theme === "dark" ? "light" : "dark");
+    root.classList.add(theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   return (
     <React.Fragment>

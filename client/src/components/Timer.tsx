@@ -1,20 +1,24 @@
-import React, { FC, useEffect, useRef, useState } from "react";
-import { IPhase, PhaseKeys, Time } from "../../types";
+import React, { FC, useEffect, useRef } from "react";
+import { PhaseKeys } from "../../types";
 import { phaseNames } from "./static";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import {
+  changePhase,
+  reset,
+  setcheckpoint,
+  settime,
+  toggleStopped,
+  update,
+} from "../redux/timer";
 
-interface TimerProps {
-  initialTime: Time;
-  callback: () => any;
-  phase: string;
-}
+interface TimerProps {}
 
-const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
-  const [checkpoint, setCheckpoint] = useState({
-    timeLeft: initialTime,
-    resumeTime: new Date(),
-  });
-  const [time, setTime] = useState(initialTime);
-  const [stopped, setStopped] = useState(true);
+const Timer: FC<TimerProps> = () => {
+  const time = useAppSelector((state) => state.timer.time);
+  const stopped = useAppSelector((state) => state.timer.stopped);
+  const phase = useAppSelector((state) => state.timer.phase);
+  const dispatch = useAppDispatch();
+
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const formatTime = (timeToFormat: number) => {
@@ -33,17 +37,9 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
   const updateTime = (time: number) => {
     if (time < 0) {
       if (timer.current) clearInterval(timer.current);
-      callback();
+      dispatch(changePhase());
     } else {
-      setTime(() => {
-        console.log(checkpoint.resumeTime);
-        console.log(new Date());
-        return Math.round(
-          checkpoint.timeLeft -
-            Math.round(new Date().getTime() - checkpoint.resumeTime.getTime()) /
-              1000
-        );
-      });
+      dispatch(update());
     }
   };
 
@@ -51,31 +47,29 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
     if (!stopped) {
       if (timer.current) clearInterval(timer.current);
     } else {
-      setCheckpoint({
-        timeLeft: time,
-        resumeTime: new Date(),
-      });
+      dispatch(
+        setcheckpoint({
+          timeLeft: time,
+          resumeTime: new Date().toString(),
+        })
+      );
       launchTimer(time - 1); // I found immediate timer resume to be more intuitive
     }
-    setStopped(!stopped);
+    dispatch(toggleStopped());
   };
 
   const handleSkip = () => {
-    callback();
+    if (timer.current) clearInterval(timer.current);
+    dispatch(changePhase());
   };
 
   const handleReset = () => {
     if (timer.current) clearInterval(timer.current);
-    setTime(initialTime);
-    setStopped(true);
-    setCheckpoint({
-      timeLeft: initialTime,
-      resumeTime: new Date(),
-    });
+    dispatch(reset());
   };
 
   const launchTimer = (initialTime: number) => {
-    setTime(initialTime);
+    dispatch(settime(initialTime));
     let timeClosure = initialTime; // look up react state closure
     timer.current = setInterval(() => {
       timeClosure -= 1;
@@ -92,7 +86,7 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center border-b border-black pb-12 dark:border-white md:w-5/12 md:border-b-0 md:border-r md:pb-0">
       <div className="mb-12 mt-12 text-5xl md:-mt-6">
-        {phase == phaseNames[PhaseKeys.Work] ? "Focus" : "Rest"}
+        {phase.name == phaseNames[PhaseKeys.Work] ? "Focus" : "Rest"}
       </div>
       <div
         className="lg:text-9x mb-16 font-mono text-8xl tracking-wide dark:text-white xs:text-9xl md:text-8xl"
@@ -110,15 +104,15 @@ const Timer: FC<TimerProps> = ({ initialTime, callback, phase }) => {
         onClick={handleSkip}
         className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100 dark:border-white dark:text-white dark:hover:bg-gray-900"
       >
-        Skip {phase == phaseNames[PhaseKeys.Work] && "pomodoro"}{" "}
-        {phase == phaseNames[PhaseKeys.Rest] && "rest"}
+        Skip {phase.name == phaseNames[PhaseKeys.Work] && "pomodoro"}{" "}
+        {phase.name == phaseNames[PhaseKeys.Rest] && "rest"}
       </div>
       <div
         onClick={handleReset}
         className="mb-4 w-52 cursor-pointer border border-black py-2 text-center capitalize hover:bg-gray-100 dark:border-white dark:text-white dark:hover:bg-gray-900"
       >
-        Reset {phase == phaseNames[PhaseKeys.Work] && "pomodoro"}{" "}
-        {phase == phaseNames[PhaseKeys.Rest] && "rest"}
+        Reset {phase.name == phaseNames[PhaseKeys.Work] && "pomodoro"}{" "}
+        {phase.name == phaseNames[PhaseKeys.Rest] && "rest"}
       </div>
     </div>
   );

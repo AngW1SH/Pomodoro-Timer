@@ -1,67 +1,73 @@
 import React, { FC, useContext, useEffect, useRef, useState } from "react";
-import { EditAction, EditActionKind, IPomodoro } from "../../types";
+import { IPomodoro } from "../../types";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useDebounce } from "../hooks/useDebounce";
 import { LoggedInContext } from "../App";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import {
+  hideEdited,
+  popPomodoro,
+  setEdited,
+  showEdited,
+  updatePomodoros,
+} from "../redux/list";
+import { deletePomodoro, savePomodoro } from "../lib/pomodoro";
+import { addFetch, removeFetch } from "../redux/misc";
 
-interface EditProps {
-  edited: IPomodoro | null;
-  onChange: (edited: IPomodoro) => any;
-  onComplete: (id: string) => any;
-  onSave: (pomodoro: IPomodoro) => any;
-  fetchesLeft: number;
-}
+interface EditProps {}
 
-const Edit: FC<EditProps> = ({
-  edited,
-  onChange,
-  onComplete,
-  onSave,
-  fetchesLeft,
-}) => {
-  const [opened, setOpened] = useState(false);
+const Edit: FC<EditProps> = () => {
+  const opened = useAppSelector((state) => state.pomodoros.editedOpened);
   const ref = useRef<HTMLDivElement>(null);
   const [synced, setSynced] = useState(true);
 
-  const { loggedIn } = useContext(LoggedInContext);
+  const fetchesLeft = useAppSelector((state) => state.misc.fetchesLeft);
+
+  const pomodoros = useAppSelector((state) => state.pomodoros.pomodoros);
+
+  const edited = useAppSelector((state) => state.pomodoros.edited);
+  const dispatch = useAppDispatch();
+
+  const loggedIn = useAppSelector((state) => state.misc.loggedIn);
 
   const handleClose = () => {
-    setOpened(false);
+    dispatch(hideEdited());
   };
 
   const onTitleChange = (e: ContentEditableEvent) => {
     if (edited) {
-      onChange({ ...edited, title: e.target.value });
+      dispatch(setEdited({ ...edited, title: e.target.value }));
       setSynced(false);
     }
   };
 
   const onDescriptionChange = (e: ContentEditableEvent) => {
     if (edited) {
-      onChange({ ...edited, description: e.target.value });
+      dispatch(setEdited({ ...edited, description: e.target.value }));
       setSynced(false);
     }
   };
 
   const onRepeatsDecrement = () => {
     if (edited && edited.repeats > 0) {
-      onChange({ ...edited, repeats: edited.repeats - 1 });
+      dispatch(setEdited({ ...edited, repeats: edited.repeats - 1 }));
       setSynced(false);
     }
   };
 
   const onRepeatsIncrement = () => {
     if (edited) {
-      onChange({ ...edited, repeats: edited.repeats + 1 });
+      dispatch(setEdited({ ...edited, repeats: edited.repeats + 1 }));
       setSynced(false);
     }
   };
 
   const handleComplete = () => {
     if (edited) {
-      onComplete(edited.id);
+      deletePomodoro(edited.id, loggedIn);
+      dispatch(popPomodoro(edited.id));
     }
-    setOpened(false);
+    dispatch(hideEdited());
   };
 
   const handleTitleKeydown = (e: React.KeyboardEvent) => {
@@ -104,7 +110,31 @@ const Edit: FC<EditProps> = ({
        the editor won't open back if the same pomodoro is passed
     */
 
-    if (edited) setOpened(true);
+    if (edited) dispatch(showEdited());
+  }, [edited]);
+
+  const onSave = (pomodoro: IPomodoro) => {
+    dispatch(addFetch());
+    const order = pomodoros.findIndex(
+      (pomMapped) => pomMapped.id == pomodoro.id
+    );
+    if (order != -1) {
+      savePomodoro(pomodoro, order, loggedIn).then((result) =>
+        dispatch(removeFetch())
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (edited) {
+      dispatch(
+        updatePomodoros(
+          pomodoros.map((pomodoro) =>
+            pomodoro.id == edited.id ? edited : pomodoro
+          )
+        )
+      );
+    }
   }, [edited]);
 
   useEffect(() => {

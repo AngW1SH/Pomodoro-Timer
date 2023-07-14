@@ -2,6 +2,8 @@ import React, { FC, useContext, useEffect, useState } from "react";
 import { loginUser, registerUser } from "../lib/login";
 import { redirect, useNavigate } from "react-router-dom";
 import { LoggedInContext } from "../App";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { login } from "../redux/misc";
 
 enum ActionTypes {
   Login = "login",
@@ -36,7 +38,8 @@ const Login: FC<LoginProps> = () => {
 
   const navigateHome = useNavigate();
 
-  const { loggedIn, setLoggedIn } = useContext(LoggedInContext);
+  const loggedIn = useAppSelector((state) => state.misc.loggedIn);
+  const dispatch = useAppDispatch();
 
   const [formData, setFormData] = useState<IFormData>({
     login: {
@@ -165,7 +168,7 @@ const Login: FC<LoginProps> = () => {
       );
 
       if (result == 200) {
-        setLoggedIn(true);
+        dispatch(login());
         navigateHome("../");
       }
     }

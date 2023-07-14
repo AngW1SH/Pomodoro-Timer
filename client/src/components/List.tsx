@@ -1,156 +1,46 @@
-import React, { FC, useContext, useRef, useState } from "react";
-import { IPomodoro } from "../../types";
+import React, { FC, useEffect, useRef, useState } from "react";
 import add from "../assets/add.svg";
-import { LoggedInContext } from "../App";
+import { addPomodoro, updateOrder } from "../lib/pomodoro";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { pushPomodoro, setEdited, updatePomodoros } from "../redux/list";
+import { useDragnDrop } from "../hooks/useDragnDrop";
 
 interface ListProps {
-  pomodoros: IPomodoro[];
-  setPomodoros: (pomodoros: IPomodoro[], serverUpdate: boolean) => any;
-  onClick: (pomodoro: IPomodoro) => any;
-  onAdd: () => any;
   isLoading: boolean;
 }
 
-const List: FC<ListProps> = ({
-  pomodoros,
-  setPomodoros,
-  onClick,
-  onAdd,
-  isLoading,
-}) => {
-  const dragInfo = useRef({
-    isDragged: false,
-    draggedIndex: -1,
-    x: -1,
-    y: -1,
-    width: -1,
-    newIndex: -1,
-  });
-  const dragRef = useRef<HTMLElement | null>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+const List: FC<ListProps> = ({ isLoading }) => {
+  const dispatch = useAppDispatch();
 
-  const [draggedIndex, setDraggedIndex] = useState(-1);
+  const loggedIn = useAppSelector((state) => state.misc.loggedIn);
+  const pomodoros = useAppSelector((state) => state.pomodoros.pomodoros);
 
-  const { loggedIn } = useContext(LoggedInContext);
+  const { dragInfo, listRef, handleDragStart, handleClick } = useDragnDrop();
 
-  const handleDragStart = (e: React.MouseEvent) => {
-    if (e.target instanceof HTMLElement) {
-      Array.from(e.currentTarget.children).forEach((child, index) => {
-        if (e.target == child || child.contains(e.target as HTMLElement)) {
-          const box = child.getBoundingClientRect();
-          dragInfo.current = {
-            isDragged: false,
-            draggedIndex: index,
-            x: box.left,
-            y: box.top,
-            width: child.clientWidth,
-            newIndex: draggedIndex,
-          };
-
-          dragRef.current = child.children[0] as HTMLElement;
-        }
-      });
-    }
-
-    const positions = Array.from(listRef.current!.children).map(
-      (child, index) => {
-        return child.getBoundingClientRect().top;
-      }
-    );
-
-    const handleDrag = (e: MouseEvent) => {
-      const newIndex = positions.findIndex((rectTop, index) => {
-        return dragInfo.current.y < rectTop;
-      });
-
-      dragInfo.current = {
-        isDragged: true,
-        draggedIndex: dragInfo.current.draggedIndex,
-        x: dragInfo.current.x + e.movementX,
-        y: dragInfo.current.y + e.movementY,
-        width: dragInfo.current.width,
-        newIndex: newIndex,
-      };
-
-      if (draggedIndex == -1) setDraggedIndex(dragInfo.current.draggedIndex);
-
-      if (dragRef.current) {
-        dragRef.current.style.position = "fixed";
-        dragRef.current.style.top = dragInfo.current.y + "px";
-        dragRef.current.style.left = dragInfo.current.x + "px";
-        dragRef.current.style.width = dragInfo.current.width + "px";
-        dragRef.current.style.zIndex = "100";
-      }
-      if (listRef.current) {
-        if (newIndex == -1) {
-          setPomodoros(
-            [
-              ...pomodoros.filter(
-                (pomodoro, index) => index != dragInfo.current.draggedIndex
-              ),
-              pomodoros[dragInfo.current.draggedIndex],
-            ],
-            false
-          );
-        } else {
-          const newPomodoros = pomodoros.map((pomodoro, index) =>
-            index == dragInfo.current.draggedIndex
-              ? { ...pomodoro, id: "-1" }
-              : pomodoro
-          );
-          newPomodoros.splice(
-            newIndex,
-            0,
-            pomodoros[dragInfo.current.draggedIndex]
-          );
-          setPomodoros(
-            newPomodoros.filter((pomodoro) => pomodoro.id != "-1"),
-            false
-          );
-        }
-      }
+  const handleAddPomodoro = async () => {
+    const newPomodoro = {
+      id: "-1",
+      title: "",
+      description: "",
+      repeats: 1,
     };
 
-    const handleDragStop = () => {
-      dragInfo.current = {
-        isDragged: false,
-        draggedIndex: -1,
-        x: -1,
-        y: -1,
-        width: -1,
-        newIndex: -1,
-      };
+    const result = await addPomodoro(newPomodoro, loggedIn);
 
-      if (dragRef.current) dragRef.current.removeAttribute("style");
-
-      setDraggedIndex(-1);
-      window.removeEventListener("mousemove", handleDrag);
-      window.removeEventListener("mouseup", handleDragStop);
-    };
-
-    if (dragInfo.current.draggedIndex != -1) {
-      window.addEventListener("mousemove", handleDrag);
-      window.addEventListener("mouseup", handleDragStop);
-    }
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
-    if (!dragInfo.current.isDragged && e.target instanceof HTMLElement) {
-      Array.from(e.currentTarget.children).forEach((child, index) => {
-        if (e.target == child || child.contains(e.target as HTMLElement)) {
-          onClick(pomodoros[index]);
-        }
-      });
-    } else if (dragInfo.current.isDragged) {
-      const index = Array.from(e.currentTarget.children).findIndex(
-        (child, index) => {
-          return dragInfo.current.y < child.getBoundingClientRect().top;
-        }
+    if (result.id == "-1") {
+      const newId = pomodoros.reduce(
+        (acc, cur) => (acc > +cur.id ? +cur.id : acc),
+        0
       );
-
-      setPomodoros(pomodoros, true);
+      dispatch(pushPomodoro({ ...result, id: "" + (newId - 1) }));
+    } else {
+      dispatch(pushPomodoro(result));
     }
   };
+
+  useEffect(() => {
+    if (!loggedIn) dispatch(updatePomodoros([]));
+  }, [loggedIn]);
 
   return (
     <div className="relative h-full w-full p-10 md:w-7/12 md:overflow-auto">
@@ -212,7 +102,7 @@ const List: FC<ListProps> = ({
         </div>
       )}
       <div
-        onClick={onAdd}
+        onClick={handleAddPomodoro}
         className="absolute bottom-0 left-0 flex h-16 w-full cursor-pointer items-center justify-center bg-gray-100 hover:bg-gray-200 dark:border-t dark:border-t-white dark:bg-gray-800 dark:hover:bg-gray-700"
       >
         <img src={add} alt="add a pomodoro" />

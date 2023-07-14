@@ -1,25 +1,13 @@
-import React, {
-  FC,
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { FC, useEffect, useState } from "react";
 import Timer from "../components/Timer";
 import List from "../components/List";
-import { phases, staticPomodoros } from "../components/static";
-import { IPhase, IPomodoro, PhaseKeys, Time } from "../../types";
 import Edit from "../components/Edit";
-import {
-  addPomodoro,
-  deletePomodoro,
-  getPomodoros,
-  savePomodoro,
-  updateOrder,
-} from "../lib/pomodoro";
+import { getPomodoros, savePomodoro } from "../lib/pomodoro";
 import Settings from "../components/Settings";
 import { checkLoggedIn } from "../lib/login";
-import { LoggedInContext } from "../App";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { updatePomodoros } from "../redux/list";
+import { logout } from "../redux/misc";
 
 interface MainProps {}
 
@@ -31,40 +19,36 @@ without adding too much unnecessary state
 const EditWithMemo = React.memo(Edit, (props, newProps) => false);
 
 const Main: FC<MainProps> = () => {
-  const [phase, setPhase] = useState<IPhase>(phases[PhaseKeys.Work]);
-  const [edited, setEdited] = useState<IPomodoro | null>(null);
-  const [pomodoros, setPomodoros] = useState<IPomodoro[]>([]);
+  const pomodoros = useAppSelector((state) => state.pomodoros.pomodoros);
+  const phase = useAppSelector((state) => state.timer.phase);
+
+  const dispatch = useAppDispatch();
   /*
   it may not be the worst idea to have a specific 'pomodoros' array that will indicate that
   the pomodoros have not been loaded for the first time yet
   */
   const [initialLoad, setInitialLoad] = useState(true);
-  const { loggedIn, setLoggedIn } = useContext(LoggedInContext);
 
-  const [fetchesLeft, setFetchesLeft] = useState(0);
+  const loggedIn = useAppSelector((state) => state.misc.loggedIn);
 
-  const onPomodoroClick = (pomodoro: IPomodoro) => {
-    setEdited({ ...pomodoro });
+  const updateLoggedIn = async () => {
+    const result = await checkLoggedIn();
+
+    if (result != 200) {
+      dispatch(logout());
+    }
+  };
+
+  const fetchPomodoros = async () => {
+    const pomodorosFromServer = await getPomodoros(loggedIn);
+    dispatch(updatePomodoros(pomodorosFromServer));
+    setInitialLoad(false);
   };
 
   useEffect(() => {
-    if (edited) {
-      setPomodoros(
-        pomodoros.map((pomodoro) =>
-          pomodoro.id == edited.id ? edited : pomodoro
-        )
-      );
-    }
-  }, [edited]);
-
-  const changePhase = () => {
-    if (phase.name == "rest") {
-      setPhase(phases[PhaseKeys.Work]);
-    }
-    if (phase.name == "work") {
-      setPhase(phases[PhaseKeys.Rest]);
-    }
-  };
+    updateLoggedIn();
+    fetchPomodoros();
+  }, []);
 
   const completeClosestPomodoro = () => {
     const completedIndex = pomodoros.findIndex(
@@ -72,11 +56,13 @@ const Main: FC<MainProps> = () => {
     );
 
     if (completedIndex != -1) {
-      setPomodoros(
-        pomodoros.map((pomodoro, index) =>
-          index == completedIndex
-            ? { ...pomodoro, repeats: pomodoro.repeats - 1 }
-            : pomodoro
+      dispatch(
+        updatePomodoros(
+          pomodoros.map((pomodoro, index) =>
+            index == completedIndex
+              ? { ...pomodoro, repeats: pomodoro.repeats - 1 }
+              : pomodoro
+          )
         )
       );
       savePomodoro(
@@ -90,106 +76,16 @@ const Main: FC<MainProps> = () => {
     }
   };
 
-  const onComplete = (id: string) => {
-    deletePomodoro(id, loggedIn);
-    setPomodoros(pomodoros.filter((pomodoro) => pomodoro.id != id));
-  };
-
-  const onAdd = async () => {
-    const newPomodoro = {
-      id: "-1",
-      title: "",
-      description: "",
-      repeats: 1,
-    };
-
-    const result = await addPomodoro(newPomodoro, loggedIn);
-
-    if (result.id == "-1") {
-      const newId = pomodoros.reduce(
-        (acc, cur) => (acc > +cur.id ? +cur.id : acc),
-        0
-      );
-      setPomodoros((pomodoros) => [
-        ...pomodoros,
-        { ...result, id: "" + (newId - 1) },
-      ]);
-      setEdited({ ...result, id: "" + (newId - 1) });
-    } else {
-      setPomodoros((pomodoros) => [...pomodoros, result]);
-      setEdited(result);
-    }
-    updateOrder(pomodoros, loggedIn);
-  };
-
-  const onSave = (pomodoro: IPomodoro) => {
-    setFetchesLeft((fetchesLeftPrev) => fetchesLeftPrev + 1);
-    const order = pomodoros.findIndex(
-      (pomMapped) => pomMapped.id == pomodoro.id
-    );
-    if (order != -1) {
-      savePomodoro(pomodoro, order, loggedIn).then((result) =>
-        setFetchesLeft((fetchesLeftPrev) => fetchesLeftPrev - 1)
-      );
-    }
-  };
-
-  const swapPomodoros = (pomodoros: IPomodoro[], serverUpdate: boolean) => {
-    setPomodoros(pomodoros);
-    if (serverUpdate) updateOrder(pomodoros, loggedIn);
-  };
-
-  const onTimeout = () => {
-    if (phase.name == "work") completeClosestPomodoro();
-    changePhase();
-  };
-
-  const updateLoggedIn = async () => {
-    const result = await checkLoggedIn();
-
-    if (result != 200) {
-      setLoggedIn(false);
-    }
-  };
-
-  const fetchPomodoros = async () => {
-    const pomodorosFromServer = await getPomodoros(loggedIn);
-    setPomodoros(pomodorosFromServer);
-    setInitialLoad(false);
-  };
-
   useEffect(() => {
-    updateLoggedIn();
-    fetchPomodoros();
-  }, []);
-
-  useEffect(() => {
-    if (!loggedIn) setPomodoros([]);
-  }, [loggedIn]);
+    if (phase.name == "rest") completeClosestPomodoro();
+  }, [phase]);
 
   return (
     <div className="flex h-screen flex-col dark:bg-black md:flex-row">
-      <Timer
-        key={"" + phase.initialTime + phase}
-        initialTime={phase.initialTime}
-        callback={onTimeout}
-        phase={phase.name}
-      />
+      <Timer />
       <div className="mb-10 md:mb-0" />
-      <List
-        onClick={onPomodoroClick}
-        isLoading={initialLoad}
-        pomodoros={pomodoros}
-        setPomodoros={swapPomodoros}
-        onAdd={onAdd}
-      />
-      <EditWithMemo
-        edited={edited}
-        onComplete={onComplete}
-        onChange={setEdited}
-        onSave={onSave}
-        fetchesLeft={fetchesLeft}
-      />
+      <List isLoading={initialLoad} />
+      <EditWithMemo />
       <Settings />
     </div>
   );
