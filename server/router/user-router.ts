@@ -1,0 +1,180 @@
+import express from "express";
+import prisma from "../client";
+import crypto from "node:crypto";
+import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
+import jwt from "jsonwebtoken";
+
+import passport from "../passport/";
+import { generateAccessToken, generateRefreshToken } from "../jwt/";
+
+const userRouter = express.Router();
+
+userRouter.get(
+  "/islogged",
+  passport.authenticate("jwt-authenticate"),
+  async (req, res) => {
+    return res.status(200).send();
+  }
+);
+
+userRouter.get("/confirmemail/:token", async (req, res) => {
+  const userid_token = await prisma.userEmailConfirm.findFirst({
+    where: {
+      token: req.params.token,
+    },
+  });
+
+  if (userid_token && userid_token.userid) {
+    const user = await prisma.user.update({
+      where: {
+        id: userid_token.userid,
+      },
+      data: {
+        active: true,
+      },
+    });
+  }
+  return res.status(200).send();
+});
+
+userRouter.get("/unauthorize", async (req, res) => {
+  try {
+    res.cookie("pomonotes-access", null, {
+      maxAge: 0,
+      httpOnly: true,
+      signed: true,
+    });
+    res.cookie("pomonotes-refresh", null, {
+      maxAge: 0,
+      httpOnly: true,
+      signed: true,
+    });
+    res.status(200).send();
+  } catch (err) {
+    res.status(500).send();
+  }
+});
+
+const sendConfirmationEmail = async (email: string, token: string) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "yandex",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
+
+    const info = await transporter.sendMail({
+      from: process.env.MAIL_USER + "@yandex.ru",
+      to: email,
+      subject: "Pomodoro | Email Confirmation",
+      text: "http://localhost:5173/api/confirmemail/" + token,
+    });
+
+    return info;
+  } catch (err) {
+    return err;
+  }
+};
+
+userRouter.post("/register", async (req, res) => {
+  try {
+    if (!req.body.email || !req.body.password) {
+      res.status(400).send();
+      return;
+    }
+
+    const doesUserExist = await prisma.user.findFirst({
+      where: {
+        email: req.body.email,
+      },
+    });
+
+    if (doesUserExist === null) {
+      bcrypt.genSalt(10, function (err, salt) {
+        bcrypt.hash(req.body.password, salt, async (err, hashedPassword) => {
+          const result = await prisma.user.create({
+            data: {
+              email: req.body.email,
+              password: hashedPassword,
+            },
+          });
+          const token = crypto.randomBytes(128).toString("hex");
+          const resultEmail = await prisma.userEmailConfirm.create({
+            data: {
+              token: token,
+              userid: result.id,
+            },
+          });
+          console.log(await sendConfirmationEmail(result.email, token));
+          res.status(200).send();
+          return;
+        });
+      });
+    } else {
+      res.status(401).send();
+      return;
+    }
+  } catch (error) {
+    res.status(500).send();
+    return;
+  }
+});
+
+userRouter.get("/token", async (req, res) => {
+  jwt.verify(
+    req.signedCookies["pomonotes-refresh"],
+    process.env.TOKEN_SECRET!,
+    async (err, decoded) => {
+      if (err) {
+        res.status(401).send();
+      } else {
+        const doesUserExist = await prisma.user.findFirst({
+          where: {
+            email: req.body.email,
+          },
+        });
+        if (doesUserExist) {
+          const newToken = generateAccessToken(doesUserExist.id);
+          res.clearCookie("pomonotes-access");
+          res.cookie("pomonotes-access", newToken, {
+            maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
+            httpOnly: true,
+            signed: true,
+          });
+          return res.status(205).send();
+        } else {
+          return res.status(401).send();
+        }
+      }
+    }
+  );
+});
+
+userRouter.post(
+  "/login",
+  passport.authenticate("local-login"),
+  async (req, res) => {
+    if (req.user) {
+      res.cookie("pomonotes-access", generateAccessToken(req.user.id), {
+        maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
+        httpOnly: true,
+        signed: true,
+      });
+
+      res.cookie("pomonotes-refresh", generateRefreshToken(req.user.id), {
+        maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
+        httpOnly: true,
+        signed: true,
+      });
+      res.status(200).send();
+    }
+    res.status(401).send();
+  }
+);
+
+export default userRouter;

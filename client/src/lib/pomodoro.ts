@@ -1,10 +1,12 @@
 import { useContext } from "react";
 import { IPomodoro } from "../../types";
-import { LoggedInContext } from "../App";
 
 const authorizedFetch = async <Type>(url: RequestInfo, init?: RequestInit) => {
   const result = await fetch(url, init);
-  if (result.status == 205) return await fetch(url, init);
+  if (result.status == 401) {
+    await fetch("/api/user/token");
+    return await fetch(url, init);
+  }
   return result;
 };
 

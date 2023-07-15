@@ -75,14 +75,7 @@ const Edit: FC<EditProps> = () => {
   const handleTitleKeydown = (e: React.KeyboardEvent) => {
     if (e.key == "Enter") e.preventDefault();
   };
-
-  /*
-  Used to make new lines with <br> instead of a new <div>
-  but it turned out to be pretty buggy (sometimes, the
-  range would jump back to its previous position after
-  half a second of being in a new one)
-  And on top of that, creating new divs isn't exactly an issue,
-  so i decided to leave it be for now */
+  
   const handleDescriptionKeydown = (e: React.KeyboardEvent) => {
     if (e.key == "Enter" && e.shiftKey == false && ref.current) {
       e.preventDefault();

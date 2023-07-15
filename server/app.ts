@@ -1,9 +1,12 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
+import session from "express-session";
+import passport from "./passport/";
 
 import path from "path";
 import apiRouter from "./router/api-router";
+import userRouter from "./router/user-router";
 
 const app = express();
 app.listen(3000, () => console.log("listening port 3000"));
@@ -11,7 +14,19 @@ app.listen(3000, () => console.log("listening port 3000"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser("secret"));
+app.use(
+  session({
+    secret: "123",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false },
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 app.use("/api", apiRouter);
+app.use("/api/user", userRouter);
 
 app.use("/public", express.static(path.resolve(__dirname + "/../public")));
 

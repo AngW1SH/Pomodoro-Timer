@@ -1,5 +1,14 @@
+const authorizedFetch = async <Type>(url: RequestInfo, init?: RequestInit) => {
+  const result = await fetch(url, init);
+  if (result.status == 401) {
+    await fetch("/api/user/token");
+    return await fetch(url, init);
+  }
+  return result;
+};
+
 export const registerUser = async (email: string, password: string) => {
-  const result = await fetch("/api/register", {
+  const result = await fetch("/api/user/register", {
     method: "POST",
     cache: "no-cache",
     headers: {
@@ -15,14 +24,14 @@ export const registerUser = async (email: string, password: string) => {
 };
 
 export const loginUser = async (email: string, password: string) => {
-  const result = await fetch("/api/login", {
+  const result = await fetch("/api/user/login", {
     method: "POST",
     cache: "no-cache",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      email: email,
+      username: email,
       password: password,
     }),
   }).then((response) => response.status);
@@ -31,7 +40,7 @@ export const loginUser = async (email: string, password: string) => {
 };
 
 export const checkLoggedIn = async () => {
-  const result = await fetch("/api/islogged").then(
+  const result = await authorizedFetch("/api/user/islogged").then(
     (response) => response.status
   );
 
@@ -39,7 +48,7 @@ export const checkLoggedIn = async () => {
 };
 
 export const unauthorize = async () => {
-  const result = await fetch("/api/unauthorize").then(
+  const result = await fetch("/api/user/unauthorize").then(
     (response) => response.status
   );
 

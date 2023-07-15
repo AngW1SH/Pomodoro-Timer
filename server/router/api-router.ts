@@ -1,325 +1,158 @@
-import { PrismaClient } from "@prisma/client";
 import express from "express";
 import prisma from "../client";
-import crypto from "node:crypto";
-import nodemailer from "nodemailer";
-import bcrypt, { hash } from "bcryptjs";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  authorize,
-  getUserId,
-} from "../prisma/JWT/jwt";
 var apiRouter = express.Router();
 
-//const prisma = new PrismaClient()
+import passport from "../passport/";
 
-apiRouter.post("/updateorder", authorize, async (req, res) => {
-  if (!req.body.info) {
-    res.status(400).send("Info not recieved");
+apiRouter.post(
+  "/updateorder",
+  passport.authenticate("jwt-authenticate", { session: false }),
+  async (req, res) => {
+    if (!req.body.info) {
+      res.status(400).send("Info not recieved");
+    }
+    try {
+      const result = await Promise.all(
+        req.body.info.map(({ id, order }) =>
+          prisma.pomodoro.update({
+            where: {
+              id: id,
+            },
+            data: {
+              order: order,
+            },
+          })
+        )
+      );
+      res.status(200);
+    } catch (error) {
+      res.status(500);
+    }
   }
-  try {
-    const result = await Promise.all(
-      req.body.info.map(({ id, order }) =>
-        prisma.pomodoro.update({
-          where: {
-            id: id,
+);
+
+apiRouter.post(
+  "/add",
+  passport.authenticate("jwt-authenticate", { session: false }),
+  async (req, res) => {
+    if (!req.body.pomodoro) {
+      res.status(400).send("Pomodoro not recieved");
+    }
+    try {
+      if (req.user && req.user.id.length) {
+        const max = await prisma.pomodoro.aggregate({
+          _max: {
+            order: true,
           },
+        });
+        const add = await prisma.pomodoro.create({
           data: {
-            order: order,
+            ...req.body.pomodoro,
+            id: undefined,
+            userid: req.user.id,
+            order: max._max.order ? max._max.order + 1 : 0,
           },
-        })
-      )
-    );
-    res.status(200);
-  } catch (error) {
-    res.status(500);
-  }
-});
-
-apiRouter.post("/add", authorize, async (req, res) => {
-  if (!req.body.pomodoro) {
-    res.status(400).send("Pomodoro not recieved");
-  }
-  try {
-    const userId = getUserId(req.signedCookies["pomonotes-access"]);
-
-    if (userId.length) {
-      const max = await prisma.pomodoro.aggregate({
-        _max: {
-          order: true,
-        },
-      });
-      const add = await prisma.pomodoro.create({
-        data: {
-          ...req.body.pomodoro,
-          id: undefined,
-          userid: userId,
-          order: max._max.order ? max._max.order + 1 : 0,
-        },
-      });
-      res.status(200).send(add);
-    } else {
-      res.status(201).send();
+        });
+        res.status(200).send(add);
+      } else {
+        res.status(201).send();
+      }
+    } catch (error) {
+      res.status(500);
     }
-  } catch (error) {
-    res.status(500);
   }
-});
+);
 
-apiRouter.post("/save", authorize, async (req, res) => {
-  if (!req.body.pomodoro) {
-    res.status(400).send("Pomodoro not recieved");
-  }
-  try {
-    const userId = getUserId(req.signedCookies["pomonotes-access"]);
-
-    if (userId.length) {
-      const add = await prisma.pomodoro.updateMany({
-        where: {
-          id: req.body.pomodoro.id,
-          userid: userId,
-        },
-        data: req.body.pomodoro,
-      });
-      res.status(200).send(add);
-    } else {
-      res.status(201).send();
+apiRouter.post(
+  "/save",
+  passport.authenticate("jwt-authenticate", { session: false }),
+  async (req, res) => {
+    if (!req.body.pomodoro) {
+      res.status(400).send("Pomodoro not recieved");
     }
-  } catch (error) {
-    res.status(500);
+    try {
+      if (req.user && req.user.id.length) {
+        const add = await prisma.pomodoro.updateMany({
+          where: {
+            id: req.body.pomodoro.id,
+            userid: req.user.id,
+          },
+          data: req.body.pomodoro,
+        });
+        res.status(200).send(add);
+      } else {
+        res.status(401).send();
+      }
+    } catch (error) {
+      res.status(500);
+    }
   }
-});
+);
 
-apiRouter.post("/delete", async (req, res) => {
-  if (!req.body.id) {
-    res.status(400).send("Id not recieved");
-  }
-  try {
-    const userId = getUserId(req.signedCookies["pomonotes-access"]);
-
-    if (userId.length) {
-      const deleted = await prisma.pomodoro.deleteMany({
+apiRouter.post(
+  "/delete",
+  passport.authenticate("jwt-authenticate", {
+    session: false,
+    failureMessage: true,
+  }),
+  async (req, res) => {
+    if (!req.body.id) {
+      res.status(400).send("Id not recieved");
+    }
+    try {
+      if (req.user && req.user.id.length) {
+        const deleted = await prisma.pomodoro.deleteMany({
+          where: {
+            id: req.body.id,
+            userid: req.user.id,
+          },
+        });
+        res.status(200).send(deleted);
+      }
+    } catch (error) {
+      res.status(500);
+    }
+    if (!req.body.id) {
+      res.status(400).send("Id not recieved");
+    }
+    try {
+      const deleted = await prisma.pomodoro.delete({
         where: {
           id: req.body.id,
-          userid: userId,
         },
       });
       res.status(200).send(deleted);
+    } catch (error) {
+      res.status(500);
     }
-  } catch (error) {
-    res.status(500);
   }
-  if (!req.body.id) {
-    res.status(400).send("Id not recieved");
-  }
-  try {
-    const deleted = await prisma.pomodoro.delete({
-      where: {
-        id: req.body.id,
-      },
-    });
-    res.status(200).send(deleted);
-  } catch (error) {
-    res.status(500);
-  }
-});
+);
 
-apiRouter.get("/get", authorize, async (req, res) => {
-  try {
-    const userId = getUserId(req.signedCookies["pomonotes-access"]);
-
-    if (userId.length) {
-      const pomodoros = await prisma.pomodoro.findMany({
-        where: {
-          userid: userId,
-        },
-        orderBy: {
-          order: "asc",
-        },
-      });
-      res.status(200).send(pomodoros);
-    } else {
-      res.status(201).send();
-    }
-  } catch (error) {
-    res.status(500);
-  }
-});
-
-apiRouter.get("/islogged", authorize, async (req, res) => {
-  return res.status(200).send();
-});
-
-apiRouter.get("/confirmemail/:token", async (req, res) => {
-  const userid_token = await prisma.userEmailConfirm.findFirst({
-    where: {
-      token: req.params.token,
-    },
-  });
-
-  if (userid_token && userid_token.userid) {
-    const user = await prisma.user.update({
-      where: {
-        id: userid_token.userid,
-      },
-      data: {
-        active: true,
-      },
-    });
-  }
-  return res.status(200).send();
-});
-
-apiRouter.get("/unauthorize", async (req, res) => {
-  try {
-    res.cookie("pomonotes-access", null, {
-      maxAge: 0,
-      httpOnly: true,
-      signed: true,
-    });
-    res.cookie("pomonotes-refresh", null, {
-      maxAge: 0,
-      httpOnly: true,
-      signed: true,
-    });
-    res.status(200).send();
-  } catch (err) {
-    res.status(500).send();
-  }
-});
-
-const sendConfirmationEmail = async (email: string, token: string) => {
-  try {
-    const transporter = nodemailer.createTransport({
-      service: "yandex",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
-      },
-    });
-
-    const info = await transporter.sendMail({
-      from: process.env.MAIL_USER + "@yandex.ru",
-      to: email,
-      subject: "Pomodoro | Email Confirmation",
-      text: "http://localhost:5173/api/confirmemail/" + token,
-    });
-
-    return info;
-  } catch (err) {
-    return err;
-  }
-};
-
-apiRouter.post("/register", async (req, res) => {
-  try {
-    if (!req.body.email || !req.body.password) {
-      res.status(400).send();
-      return;
-    }
-
-    const doesUserExist = await prisma.user.findFirst({
-      where: {
-        email: req.body.email,
-      },
-    });
-
-    if (doesUserExist === null) {
-      bcrypt.genSalt(10, function (err, salt) {
-        bcrypt.hash(req.body.password, salt, async (err, hashedPassword) => {
-          const result = await prisma.user.create({
-            data: {
-              email: req.body.email,
-              password: hashedPassword,
-            },
-          });
-          const token = crypto.randomBytes(128).toString("hex");
-          const resultEmail = await prisma.userEmailConfirm.create({
-            data: {
-              token: token,
-              userid: result.id,
-            },
-          });
-          console.log(await sendConfirmationEmail(result.email, token));
-          res.status(200).send();
-          return;
+apiRouter.get(
+  "/get",
+  passport.authenticate("jwt-authenticate", {
+    session: false,
+    failureMessage: true,
+  }),
+  async (req, res) => {
+    try {
+      if (req.user && req.user.id.length) {
+        const pomodoros = await prisma.pomodoro.findMany({
+          where: {
+            userid: req.user.id,
+          },
+          orderBy: {
+            order: "asc",
+          },
         });
-      });
-    } else {
-      res.status(401).send();
-      return;
-    }
-  } catch (error) {
-    res.status(500).send();
-    return;
-  }
-});
-
-apiRouter.get("/test", async (req, res) => {
-  try {
-    res.status(200).send({
-      access: req.signedCookies["pomonotes-access"],
-      refresh: req.signedCookies["pomonotes-refresh"],
-    });
-  } catch {
-    return res.status(400).send();
-  }
-});
-
-apiRouter.post("/login", async (req, res) => {
-  try {
-    if (!req.body.email || !req.body.password) {
-      res.status(400).send();
-      return;
-    }
-
-    const doesUserExist = await prisma.user.findFirst({
-      where: {
-        email: req.body.email,
-      },
-    });
-
-    if (doesUserExist === null) {
-      res.status(401).send();
-      return;
-    }
-
-    bcrypt.compare(
-      req.body.password,
-      doesUserExist!.password,
-      function (err, result) {
-        if (result) {
-          res.cookie(
-            "pomonotes-access",
-            generateAccessToken(doesUserExist.id),
-            {
-              maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
-              httpOnly: true,
-              signed: true,
-            }
-          );
-
-          res.cookie(
-            "pomonotes-refresh",
-            generateRefreshToken(req.body.email),
-            {
-              maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
-              httpOnly: true,
-              signed: true,
-            }
-          );
-          res.status(200).send();
-        } else {
-          res.status(401).send();
-        }
+        res.status(200).send(pomodoros);
+      } else {
+        res.status(201).send();
       }
-    );
-  } catch (error) {
-    res.status(500).send();
+    } catch (error) {
+      res.status(500);
+    }
   }
-});
+);
 
 export default apiRouter;

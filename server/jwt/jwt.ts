@@ -1,22 +1,23 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
-import Express from "express";
-import prisma from "../../client";
+import jwt from "jsonwebtoken";
 
-export function generateAccessToken(username: string) {
-  return jwt.sign({ username: username }, process.env.TOKEN_SECRET!, {
+export function generateAccessToken(id: string) {
+  return jwt.sign({ id: id }, process.env.TOKEN_SECRET!, {
     expiresIn: 60 * 60,
   });
 }
 
-export function generateRefreshToken(username: string) {
-  return jwt.sign({ username: username }, process.env.TOKEN_SECRET!, {
+export function generateRefreshToken(id: string) {  
+  return jwt.sign({ id: id }, process.env.TOKEN_SECRET!, {
     expiresIn: 60 * 60 * 48,
   });
 }
 
-export function getUserId(token: string) {
+/*
+Legacy from before using passport.js
+
+export function getUserId(token: string) {`
   const decoded = jwt.verify(token, process.env.TOKEN_SECRET!) as JwtPayload;
-  return decoded.username;
+  return decoded.id;
 }
 
 export function authorize(
@@ -27,7 +28,7 @@ export function authorize(
   jwt.verify(
     req.signedCookies["pomonotes-access"],
     process.env.TOKEN_SECRET!,
-    (err, decoded) => {
+    (err, decoded) => {`
       if (err !== null) {
         if (err.name == "TokenExpiredError") {
           jwt.verify(
@@ -68,3 +69,4 @@ export function authorize(
     }
   );
 }
+*/

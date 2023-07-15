@@ -7,7 +7,7 @@ import Settings from "../components/Settings";
 import { checkLoggedIn } from "../lib/login";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { updatePomodoros } from "../redux/list";
-import { logout } from "../redux/misc";
+import { login } from "../redux/misc";
 
 interface MainProps {}
 
@@ -22,20 +22,16 @@ const Main: FC<MainProps> = () => {
   const updateLoggedIn = async () => {
     const result = await checkLoggedIn();
 
-    if (result != 200) {
-      dispatch(logout());
+    if (result == 200) {
+      dispatch(login());
+      const pomodorosFromServer = await getPomodoros(true);
+      dispatch(updatePomodoros(pomodorosFromServer));
+      setInitialLoad(false);
     }
-  };
-
-  const fetchPomodoros = async () => {
-    const pomodorosFromServer = await getPomodoros(loggedIn);
-    dispatch(updatePomodoros(pomodorosFromServer));
-    setInitialLoad(false);
   };
 
   useEffect(() => {
     updateLoggedIn();
-    fetchPomodoros();
   }, []);
 
   const completeClosestPomodoro = () => {
