@@ -8,7 +8,7 @@ export interface MiscState {
 
 const initialState: MiscState = {
   loggedIn: false,
-  theme: localStorage.theme,
+  theme: localStorage.theme ? localStorage.theme : "light",
   fetchesLeft: 0,
 };
 
