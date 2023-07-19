@@ -26,8 +26,8 @@ const Main: FC<MainProps> = () => {
       dispatch(login());
       const pomodorosFromServer = await getPomodoros(true);
       dispatch(updatePomodoros(pomodorosFromServer));
-      setInitialLoad(false);
     }
+    setInitialLoad(false);
   };
 
   useEffect(() => {

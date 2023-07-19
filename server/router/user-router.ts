@@ -12,7 +12,7 @@ const userRouter = express.Router();
 
 userRouter.get(
   "/islogged",
-  passport.authenticate("jwt-authenticate"),
+  passport.authenticate("jwt-authenticate", {session: false}),
   async (req, res) => {
     return res.status(200).send();
   }
@@ -159,7 +159,7 @@ userRouter.get("/token", async (req, res) => {
 });
 
 userRouter.get("/terminatesessions",
-passport.authenticate("jwt-authenticate"), async (req, res) => {
+passport.authenticate("jwt-authenticate", {session: false}), async (req, res) => {
   try {
     if (req.user) {
       const result = await prisma.user.update({
@@ -202,10 +202,8 @@ userRouter.post(
           httpOnly: true,
           signed: true,
         });
-        res.status(200).send();
-      }
-
-      const refreshToken = generateRefreshToken(req.user.id)
+      } else {
+        const refreshToken = generateRefreshToken(req.user.id)
 
       res.cookie("pomonotes-refresh", refreshToken, {
         maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
@@ -221,7 +219,7 @@ userRouter.post(
           refresh: refreshToken
         }
       });
-
+      }
       res.status(200).send();
     }
     res.status(401).send();

@@ -91,14 +91,17 @@ const List: FC<ListProps> = ({ isLoading }) => {
           ))}
       </div>
       {!isLoading && !pomodoros.length && (
-        <div className="pointer-events-none absolute left-0 top-0 -mt-10 flex h-full w-full items-center justify-center text-5xl font-light leading-snug text-gray-400">
-          All done,
-          <br /> good job!
+        <div className="pointer-events-none absolute left-0 top-0 -mt-10 flex h-full w-full items-center text-center justify-center text-5xl font-light leading-snug text-gray-300">
+          Click "+" to create
+          <br />a new pomodoro!
         </div>
       )}
-      {isLoading && (
+      {isLoading && loggedIn &&  (
         <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center">
-          <div className="b-4 b-gray-400 h-10 w-10"></div>
+          <div className="absolute border-8 border-gray-200 rounded-full h-12 w-12">
+          </div>
+          <div className="absolute border-8 border-transparent border-t-gray-400 rounded-full animate-spin-slow h-12 w-12">
+          </div>
         </div>
       )}
       <div
