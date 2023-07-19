@@ -54,3 +54,11 @@ export const unauthorize = async () => {
 
   return result;
 };
+
+export const terminateAllSessions = async () => {
+  const result = await fetch("/api/user/terminatesessions").then(
+    response => response.status
+  );
+
+  return result == 200;
+}

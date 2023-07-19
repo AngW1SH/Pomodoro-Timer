@@ -2,10 +2,11 @@ import React, { FC, useEffect, useRef, useState } from "react";
 
 import settingsIcon from "../assets/settings.svg";
 import { Link } from "react-router-dom";
-import { unauthorize } from "../lib/login";
+import { terminateAllSessions, unauthorize } from "../lib/login";
 import { Transition } from "@headlessui/react";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { logout, toggleTheme } from "../redux/misc";
+import { useNavigate } from "react-router-dom";
 
 interface SettingsProps {}
 
@@ -17,6 +18,8 @@ const Settings: FC<SettingsProps> = () => {
   const theme = useAppSelector((state) => state.misc.theme);
 
   const dispatch = useAppDispatch();
+
+  const navigate = useNavigate();
 
   const handleToggleOpen = () => {
     setOpened(!opened);
@@ -53,6 +56,15 @@ const Settings: FC<SettingsProps> = () => {
     dispatch(toggleTheme());
   };
 
+  const handleTerminateSessions =  async () => {
+    const result = await terminateAllSessions();
+
+    if (result) {
+      dispatch(logout());
+      navigate("/login");
+    }
+  }
+
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove(theme === "dark" ? "light" : "dark");
@@ -75,7 +87,7 @@ const Settings: FC<SettingsProps> = () => {
           ref={ref}
           className="fixed left-0 top-0 flex h-screen w-screen items-center justify-center"
         >
-          <div className="h-3/4 w-11/12 max-w-xl rounded-md border border-black bg-white p-10 dark:border-white dark:bg-black dark:text-white md:w-1/2">
+          <div className="h-3/4 w-11/12 max-w-xl flex flex-col rounded-md border border-black bg-white p-10 dark:border-white dark:bg-black dark:text-white md:w-1/2">
             {!loggedIn && (
               <Link
                 to={"/login"}
@@ -98,6 +110,12 @@ const Settings: FC<SettingsProps> = () => {
             >
               Toggle Theme
             </div>
+            {loggedIn && <div
+              onClick={handleTerminateSessions}
+              className="mx-auto mt-auto cursor-pointer border border-black py-3 text-center dark:border-white dark:bg-black dark:text-white md:w-3/4"
+            >
+              Terminate all sessions
+            </div>}
           </div>
         </div>
       </Transition>

@@ -24,6 +24,7 @@ model User {
   email    String
   password String
   active   Boolean @default(false)
+  refresh  String  @default("")
 }
 
 model UserEmailConfirm {

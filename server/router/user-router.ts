@@ -136,6 +136,7 @@ userRouter.get("/token", async (req, res) => {
         const doesUserExist = await prisma.user.findFirst({
           where: {
             email: req.body.email,
+            refresh: req.signedCookies["pomonotes-refresh"]
           },
         });
         if (doesUserExist) {
@@ -148,12 +149,35 @@ userRouter.get("/token", async (req, res) => {
           });
           return res.status(205).send();
         } else {
+          res.clearCookie("pomonotes-access");
+          res.clearCookie("pomonotes-refresh");
           return res.status(401).send();
         }
       }
     }
   );
 });
+
+userRouter.get("/terminatesessions",
+passport.authenticate("jwt-authenticate"), async (req, res) => {
+  try {
+    if (req.user) {
+      const result = await prisma.user.update({
+        where: {
+          id: req.user.id
+        },
+        data: {
+          refresh: ""
+        }
+      });
+      res.clearCookie("pomonotes-access");
+      res.clearCookie("pomonotes-refresh");
+      res.status(200).send();
+    }
+  } catch {
+    res.status(500).send();
+  }
+})
 
 userRouter.post(
   "/login",
@@ -166,11 +190,38 @@ userRouter.post(
         signed: true,
       });
 
-      res.cookie("pomonotes-refresh", generateRefreshToken(req.user.id), {
+      const user = await prisma.user.findFirst({
+        where: {
+          id: req.user.id
+        }
+      });
+
+      if (user && user.refresh) {
+        res.cookie("pomonotes-refresh", user.refresh, {
+          maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
+          httpOnly: true,
+          signed: true,
+        });
+        res.status(200).send();
+      }
+
+      const refreshToken = generateRefreshToken(req.user.id)
+
+      res.cookie("pomonotes-refresh", refreshToken, {
         maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
         httpOnly: true,
         signed: true,
       });
+
+      const result = await prisma.user.update({
+        where: {
+          id: req.user.id
+        },
+        data: {
+          refresh: refreshToken
+        }
+      });
+
       res.status(200).send();
     }
     res.status(401).send();
