@@ -12,7 +12,7 @@ const userRouter = express.Router();
 
 userRouter.get(
   "/islogged",
-  passport.authenticate("jwt-authenticate", {session: false}),
+  passport.authenticate("jwt-authenticate", { session: false }),
   async (req, res) => {
     return res.status(200).send();
   }
@@ -35,7 +35,7 @@ userRouter.get("/confirmemail/:token", async (req, res) => {
       },
     });
   }
-  return res.status(200).send();
+  return res.redirect("/login");
 });
 
 userRouter.get("/unauthorize", async (req, res) => {
@@ -72,7 +72,7 @@ const sendConfirmationEmail = async (email: string, token: string) => {
       from: process.env.MAIL_USER + "@yandex.ru",
       to: email,
       subject: "Pomodoro | Email Confirmation",
-      text: "http://localhost:5173/api/confirmemail/" + token,
+      text: "http://localhost:5173/api/user/confirmemail/" + token,
     });
 
     return info;
@@ -91,26 +91,40 @@ userRouter.post("/register", async (req, res) => {
     const doesUserExist = await prisma.user.findFirst({
       where: {
         email: req.body.email,
+        active: true,
       },
     });
 
     if (doesUserExist === null) {
       bcrypt.genSalt(10, function (err, salt) {
         bcrypt.hash(req.body.password, salt, async (err, hashedPassword) => {
-          const result = await prisma.user.create({
+          const deleteInactiveDuplicates = await prisma.user.deleteMany({
+            where: {
+              email: req.body.email,
+              active: false,
+            },
+          });
+          const user = await prisma.user.create({
             data: {
               email: req.body.email,
               password: hashedPassword,
             },
           });
           const token = crypto.randomBytes(128).toString("hex");
-          const resultEmail = await prisma.userEmailConfirm.create({
-            data: {
-              token: token,
-              userid: result.id,
+
+          const deletePrevTokens = await prisma.userEmailConfirm.deleteMany({
+            where: {
+              userid: user.id,
             },
           });
-          console.log(await sendConfirmationEmail(result.email, token));
+          const createNewToken = await prisma.userEmailConfirm.create({
+            data: {
+              userid: user.id,
+              token: token,
+            },
+          });
+
+          console.log(await sendConfirmationEmail(user.email, token));
           res.status(200).send();
           return;
         });
@@ -136,7 +150,7 @@ userRouter.get("/token", async (req, res) => {
         const doesUserExist = await prisma.user.findFirst({
           where: {
             email: req.body.email,
-            refresh: req.signedCookies["pomonotes-refresh"]
+            refresh: req.signedCookies["pomonotes-refresh"],
           },
         });
         if (doesUserExist) {
@@ -158,26 +172,29 @@ userRouter.get("/token", async (req, res) => {
   );
 });
 
-userRouter.get("/terminatesessions",
-passport.authenticate("jwt-authenticate", {session: false}), async (req, res) => {
-  try {
-    if (req.user) {
-      const result = await prisma.user.update({
-        where: {
-          id: req.user.id
-        },
-        data: {
-          refresh: ""
-        }
-      });
-      res.clearCookie("pomonotes-access");
-      res.clearCookie("pomonotes-refresh");
-      res.status(200).send();
+userRouter.get(
+  "/terminatesessions",
+  passport.authenticate("jwt-authenticate", { session: false }),
+  async (req, res) => {
+    try {
+      if (req.user) {
+        const result = await prisma.user.update({
+          where: {
+            id: req.user.id,
+          },
+          data: {
+            refresh: "",
+          },
+        });
+        res.clearCookie("pomonotes-access");
+        res.clearCookie("pomonotes-refresh");
+        res.status(200).send();
+      }
+    } catch {
+      res.status(500).send();
     }
-  } catch {
-    res.status(500).send();
   }
-})
+);
 
 userRouter.post(
   "/login",
@@ -192,8 +209,8 @@ userRouter.post(
 
       const user = await prisma.user.findFirst({
         where: {
-          id: req.user.id
-        }
+          id: req.user.id,
+        },
       });
 
       if (user && user.refresh) {
@@ -203,22 +220,22 @@ userRouter.post(
           signed: true,
         });
       } else {
-        const refreshToken = generateRefreshToken(req.user.id)
+        const refreshToken = generateRefreshToken(req.user.id);
 
-      res.cookie("pomonotes-refresh", refreshToken, {
-        maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
-        httpOnly: true,
-        signed: true,
-      });
+        res.cookie("pomonotes-refresh", refreshToken, {
+          maxAge: 1000 * 60 * 60 * 24, // would expire after 15 minutes
+          httpOnly: true,
+          signed: true,
+        });
 
-      const result = await prisma.user.update({
-        where: {
-          id: req.user.id
-        },
-        data: {
-          refresh: refreshToken
-        }
-      });
+        const result = await prisma.user.update({
+          where: {
+            id: req.user.id,
+          },
+          data: {
+            refresh: refreshToken,
+          },
+        });
       }
       res.status(200).send();
     }

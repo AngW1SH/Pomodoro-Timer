@@ -10,6 +10,7 @@ const loginStrategy = new localStrategy(async function verify(
   const doesUserExist = await prisma.user.findFirst({
     where: {
       email: username,
+      active: true
     },
   });
 
